@@ -7,7 +7,7 @@ def reverseByteArray(ba):
         newba[len(ba)-i-1] = b
     return newba
 
-f = open("SymbolD1_sm.bmp","rb")
+f = open("4986.bmp","rb")
 f.seek(10)
 arrayoffset = reverseByteArray(bytearray(f.read(4)))
 
@@ -23,12 +23,14 @@ sizebytes = reverseByteArray(bytearray(f.read(4)))
 size = int(binascii.hexlify(sizebytes),16)
 
 f.seek(int(binascii.hexlify(arrayoffset),16))
-imagedata = ""
+imagedata = bytearray()
 rowsize = int(4.0 * round(((width+31)/32.0*4.0)/4.0))
 print rowsize
 for i in range(1,size/rowsize):
-    imagedata += f.read(rowsize-3)
-    f.seek(3,1);
+    for j in range(0,rowsize-3):
+        hex = int(binascii.hexlify(f.read(1)),16)
+        imagedata.append(hex^0xFF)
+    f.seek(3,1)
 
 imagedatastr = binascii.hexlify(imagedata)
 if len(imagedatastr)%2 is not 0:
