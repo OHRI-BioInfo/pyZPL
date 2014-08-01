@@ -1,8 +1,8 @@
 <Label>
-	<Box height="300" width="600">
+	<Box height="300" width="200">
 		<Text>This is text. The text is nice.</Text>
 	</Box>
-	<Box height="300" width="600">
+	<Box height="300" width="200">
 		<Text custom="true" customtype="string"></Text>
 	</Box>
 	<Image custom="true" customtype="checkbox">SymbolD1_sm</Image>
