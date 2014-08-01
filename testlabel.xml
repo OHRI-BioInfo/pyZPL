@@ -1,0 +1,8 @@
+<Label>
+	<Box height="500" width="600">
+		<Text>This is text. The text is nice.</Text>
+	</Box>
+	<Box height="500" width="600">
+		<Text custom="true"></Text>
+	</Box>
+</Label>
