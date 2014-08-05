@@ -31,14 +31,7 @@ ZPLLayout = "^CF0,30,30^XA"
 customIndex = 1
 
 def newRow():
-    global currentDown 
-    global remainingHeight
-    global remainingWidth
-    global currentRow
-    global rowHeight
-    global ZPLLayout
-    global rowElements
-    global currentRowElement
+    global currentDown,remainingHeight,remainingWidth,currentRow,rowHeight,ZPLLayout,rowElements,currentRowElement
 
     print remainingWidth
     currentRight = remainingWidth/2+margin
@@ -60,7 +53,7 @@ for element in root.iter():
         if element.tag == "Image":
             if element.get("customtype") == "bool":
                if not bool(sys.argv[customIndex]):
-                   element.find("..").remove(element)
+                   root.remove(element)
         elif element.tag == "Text":
             if element.get("customtype") == "string":
                 element.text = str(sys.argv[customIndex])
@@ -69,36 +62,40 @@ for element in root.iter():
                     element.find("..").remove(element)
         customIndex += 1
 
-for element in root.iter():
-    if element.tag == "Box":
-        boxWidth = element.get("width")
-        boxHeight = element.get("height")
-        border = element.get("border")
-
-        if border is None:
-            border = "10"
+def processElements(root):
+    global rowHeight,currentRow,currentRowElement,elementSpacing,remainingWidth,ZPLLayout
+    for element in list(root):
+        print element.tag
+        newElement = ZPLElement()
+        newElement.height = element.get("height")
+        newElement.width = element.get("width")
+        newElement.type = element.tag
+        rowElements.append(newElement)
         
-        newbox = ZPLElement()
-        newbox.height = boxHeight
-        newbox.width = boxWidth
-        newbox.type = element.tag
-        rowElements.append(newbox)
-
-        if int(boxHeight) > rowHeight:
-            rowHeight = int(boxHeight)
+        if int(element.get("height")) > rowHeight:
+            rowHeight = int(element.get("height"))
         if remainingWidth is not dotswide:
-            if remainingWidth < int(boxWidth) + elementSpacing:
+            if remainingWidth < int(element.get("width")) + elementSpacing:
                 newRow()
-                rowElements.append(newbox)
+                rowElements.append(newElement)
             else:
                 remainingWidth -= elementSpacing
-        ZPLLayout += "^FO+row"+str(currentRow)+"Right"+str(currentRowElement)+",+row"+str(currentRow)+"Down"
-        remainingWidth -= int(boxWidth)
 
+        if element.tag == "Box":
+            boxWidth = element.get("width")
+            boxHeight = element.get("height")
+            border = element.get("border")
 
-        ZPLLayout += "^GB"+boxWidth+","+boxHeight+","+border+"^FS"
-        currentRowElement += 1
+            if border is None:
+                border = "10"
 
+            ZPLLayout += "^FO+row"+str(currentRow)+"Right"+str(currentRowElement)+",+row"+str(currentRow)+"Down"
+            remainingWidth -= int(boxWidth)
+
+            ZPLLayout += "^GB"+boxWidth+","+boxHeight+","+border+"^FS"
+            currentRowElement += 1
+
+processElements(root)
 newRow()
 ZPLLayout += "^XZ"
 
