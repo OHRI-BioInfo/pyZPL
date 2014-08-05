@@ -4,19 +4,20 @@ DPI = 203 #dots/inch
 width = 4 #inches
 height = 6 #inches
 elementSpacing = 100 #dots
+margin = 40 #dots
 
 import xml.etree.ElementTree as ET
 import sys
 import re
 from pyZPL import *
 
-dotswide = DPI*width
-dotshigh = DPI*height
+dotswide = DPI*width-margin*2
+dotshigh = DPI*height-margin*2
 
 remainingWidth = dotswide
 remainingHeight = dotshigh
 
-currentDown = 0
+currentDown = margin
 currentRow = 0
 rowHeight = 0
 currentRowElement = 0
@@ -36,18 +37,23 @@ def newRow():
     global currentRow
     global rowHeight
     global ZPLLayout
+    global rowBoxes
+    global currentRowElement
 
-    currentRight = 0
+    print remainingWidth
+    currentRight = remainingWidth/2+margin
     for i in range(0,currentRowElement):
         ZPLLayout = ZPLLayout.replace("+row"+str(currentRow)+"Down",str(currentDown))
         ZPLLayout = ZPLLayout.replace("+row"+str(currentRow)+"Right"+str(i),str(currentRight))
         currentRight += int(rowBoxes[i].width) + elementSpacing
 
     currentDown += rowHeight + elementSpacing
+    currentRowElement = 0
     remainingHeight -= rowHeight + elementSpacing
     remainingWidth = dotswide
     rowHeight = 0
     currentRow += 1
+    rowBoxes = []
 
 for element in root.iter():
     if element.get("custom") is not None:
@@ -81,19 +87,19 @@ for element in root.iter():
         if int(boxHeight) > rowHeight:
             rowHeight = int(boxHeight)
         if remainingWidth is not dotswide:
-            remainingWidth -= elementSpacing
-            if remainingWidth < int(boxWidth)+int(border)*2:
+            if remainingWidth < int(boxWidth) + elementSpacing:
                 newRow()
+                rowBoxes.append(newbox)
+            else:
+                remainingWidth -= elementSpacing
         ZPLLayout += "^FO+row"+str(currentRow)+"Right"+str(currentRowElement)+",+row"+str(currentRow)+"Down"
-        remainingWidth -= int(boxWidth)+int(border)*2
+        remainingWidth -= int(boxWidth)
+
 
         ZPLLayout += "^GB"+boxWidth+","+boxHeight+","+border+"^FS"
         currentRowElement += 1
-#        for boxchild in element.iter():
-#            if element.tag == "Text":
 
 newRow()
-
 ZPLLayout += "^XZ"
 
 print ZPLLayout
