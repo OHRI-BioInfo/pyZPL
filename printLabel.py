@@ -25,7 +25,7 @@ currentRowElement = 0
 tree = ET.parse("testlabel.xml")
 root = tree.getroot()
 
-rowBoxes = []
+rowElements = []
 ZPLLayout = "^CF0,30,30^XA"
 
 customIndex = 1
@@ -37,7 +37,7 @@ def newRow():
     global currentRow
     global rowHeight
     global ZPLLayout
-    global rowBoxes
+    global rowElements
     global currentRowElement
 
     print remainingWidth
@@ -45,7 +45,7 @@ def newRow():
     for i in range(0,currentRowElement):
         ZPLLayout = ZPLLayout.replace("+row"+str(currentRow)+"Down",str(currentDown))
         ZPLLayout = ZPLLayout.replace("+row"+str(currentRow)+"Right"+str(i),str(currentRight))
-        currentRight += int(rowBoxes[i].width) + elementSpacing
+        currentRight += int(rowElements[i].width) + elementSpacing
 
     currentDown += rowHeight + elementSpacing
     currentRowElement = 0
@@ -53,7 +53,7 @@ def newRow():
     remainingWidth = dotswide
     rowHeight = 0
     currentRow += 1
-    rowBoxes = []
+    rowElements = []
 
 for element in root.iter():
     if element.get("custom") is not None:
@@ -78,18 +78,18 @@ for element in root.iter():
         if border is None:
             border = "10"
         
-        newbox = ZPLBox()
+        newbox = ZPLElement()
         newbox.height = boxHeight
         newbox.width = boxWidth
-        newbox.border = border
-        rowBoxes.append(newbox)
+        newbox.type = element.tag
+        rowElements.append(newbox)
 
         if int(boxHeight) > rowHeight:
             rowHeight = int(boxHeight)
         if remainingWidth is not dotswide:
             if remainingWidth < int(boxWidth) + elementSpacing:
                 newRow()
-                rowBoxes.append(newbox)
+                rowElements.append(newbox)
             else:
                 remainingWidth -= elementSpacing
         ZPLLayout += "^FO+row"+str(currentRow)+"Right"+str(currentRowElement)+",+row"+str(currentRow)+"Down"

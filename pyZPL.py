@@ -1,4 +1,4 @@
-class ZPLBox:
+class ZPLElement:
     width = 0
     height = 0
-    border = 0
+    type = ""
