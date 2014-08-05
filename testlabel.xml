@@ -1,6 +1,7 @@
 <Label>
 	<Box height="300" width="600">
 		<Text>This is text. The text is nice.</Text>
+		<Box height="100" width="300"></Box>
 	</Box>
 	<Box height="300" width="200">
 		<Text custom="true" customtype="string"></Text>

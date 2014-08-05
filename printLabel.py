@@ -11,44 +11,36 @@ import sys
 import re
 from pyZPL import *
 
-dotswide = DPI*width-margin*2
-dotshigh = DPI*height-margin*2
+labelWidth = DPI*width-margin*2
+labelHeight = DPI*height-margin*2
 
-remainingWidth = dotswide
-remainingHeight = dotshigh
+dotswide = labelWidth
+dotshigh = labelHeight
 
 currentDown = margin
-currentRow = 0
-rowHeight = 0
-currentRowElement = 0
 
 tree = ET.parse("testlabel.xml")
 root = tree.getroot()
+rootElement = ZPLElement()
+rootElement.width = labelWidth
+rootElement.height = labelHeight
+rootElement.type = "Root"
+rootElement.XMLElement = root
 
-rowElements = []
 ZPLLayout = "^CF0,30,30^XA"
 
 customIndex = 1
 
-def newRow():
-    global currentDown,remainingHeight,remainingWidth,currentRow,rowHeight,ZPLLayout,rowElements,currentRowElement
-
-    print remainingWidth
-    currentRight = remainingWidth/2+margin
-    for i in range(0,currentRowElement):
-        ZPLLayout = ZPLLayout.replace("+row"+str(currentRow)+"Down",str(currentDown))
-        ZPLLayout = ZPLLayout.replace("+row"+str(currentRow)+"Right"+str(i),str(currentRight))
-        currentRight += int(rowElements[i].width) + elementSpacing
-
-    currentDown += rowHeight + elementSpacing
-    currentRowElement = 0
-    remainingHeight -= rowHeight + elementSpacing
-    remainingWidth = dotswide
-    rowHeight = 0
-    currentRow += 1
-    rowElements = []
-
 for element in root.iter():
+    if element.tag == "Image":
+        root.remove(element) #Images not implemented yet
+    if element.tag == "Text":
+        if element.get("width") is None:
+            element.set("width",dotswide)
+        element.set("height",int(element.get("width"))/30)
+    if element.tag == "Box":
+        if element.get("border") is None:
+            element.set("border","10")
     if element.get("custom") is not None:
         if element.tag == "Image":
             if element.get("customtype") == "bool":
@@ -62,41 +54,87 @@ for element in root.iter():
                     element.find("..").remove(element)
         customIndex += 1
 
-def processElements(root):
+def processElements(root,nested):
     global rowHeight,currentRow,currentRowElement,elementSpacing,remainingWidth,ZPLLayout
-    for element in list(root):
-        print element.tag
+
+    for element in list(root.XMLElement):
         newElement = ZPLElement()
-        newElement.height = element.get("height")
-        newElement.width = element.get("width")
+        newElement.height = int(element.get("height"))
+        newElement.width = int(element.get("width"))
         newElement.type = element.tag
-        rowElements.append(newElement)
+        newElement.XMLElement = element
         
-        if int(element.get("height")) > rowHeight:
-            rowHeight = int(element.get("height"))
-        if remainingWidth is not dotswide:
-            if remainingWidth < int(element.get("width")) + elementSpacing:
-                newRow()
-                rowElements.append(newElement)
-            else:
-                remainingWidth -= elementSpacing
-
+        #if nested:
+            #dotswide = newElement.width-margin*2
+            #dotshigh = newElement.height-margin*2
+        #else:
+            #dotswide = labelWidth
+            #dotshigh = labelHeight
+        
+        #if int(element.get("height")) > rowHeight:
+            #rowHeight = int(element.get("height"))
+        #if remainingWidth is not dotswide:
+            #if remainingWidth < int(element.get("width")) + elementSpacing:
+                #newRow()
+                #rowElements.append(newElement)
+            #else:
+                #remainingWidth -= elementSpacing
+                
         if element.tag == "Box":
-            boxWidth = element.get("width")
-            boxHeight = element.get("height")
-            border = element.get("border")
+            border = int(element.get("border"))
 
-            if border is None:
-                border = "10"
+            newElement.ZPL = "^GB"+str(newElement.width)+","+str(newElement.height)+","+str(border)+"^FS"
 
-            ZPLLayout += "^FO+row"+str(currentRow)+"Right"+str(currentRowElement)+",+row"+str(currentRow)+"Down"
-            remainingWidth -= int(boxWidth)
+            print list(newElement.XMLElement)
+            for child in list(newElement.XMLElement):
+                childElement = ZPLElement()
+                childElement.XMLElement = child
+                processElements(childElement,True)
+        #if element.tag == "Text":
+        
+        root.children.append(newElement)
+        
+def generateLayout(parent):
+    global ZPLLayout
+    widthUsed = 0
+    heightUsed = 0
+    rowHeight = 0
+    
+    rowWidths = []
+    rownum = 0
+    firstElement = True
 
-            ZPLLayout += "^GB"+boxWidth+","+boxHeight+","+border+"^FS"
-            currentRowElement += 1
+    for element in list(parent.children):
+        widthUsed += element.width
+        if rowHeight < element.height:
+            rowHeight = element.height
+        if widthUsed > parent.width:
+            heightUsed += rowHeight
+            rowHeight = 0
+            rowWidths.append(widthUsed-element.width)
+            widthUsed = element.width
+            rownum += 1
+            firstElement = True
+            
+        if not firstElement:
+            widthUsed += elementSpacing
+        firstElement = False
+            
+        element.x = widthUsed-element.width
+        element.y = heightUsed+margin+rownum*elementSpacing
+        element.row = rownum
+    
+    rowWidths.append(widthUsed)
+    print rowWidths
+    
+    for element in list(parent.children):
+        element.x += (parent.width-rowWidths[element.row])/2+margin
+        ZPLLayout += "^FO"+str(element.x)+","+str(element.y)+element.ZPL
+        #if len(element.children) is not 0:
+        #    generateLayout(element)
 
-processElements(root)
-newRow()
+processElements(rootElement,False)
+generateLayout(rootElement)
 ZPLLayout += "^XZ"
 
 print ZPLLayout
