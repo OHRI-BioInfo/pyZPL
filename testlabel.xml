@@ -1,11 +1,11 @@
 <Label>
 	<Box height="300" width="600">
-		<Text>This is text. The text is nice.</Text>
-		<Box height="100" width="300"></Box>
+		<Text id="sample text">This is text. The text is nice.</Text>
+		<Box height="100" width="300"/>
 	</Box>
 	<Box height="300" width="200">
-		<Text custom="true" customtype="string"></Text>
+		<Text id="title"/>
 	</Box>
-	<Box height="300" width="200"></Box>
-	<Image custom="true" customtype="checkbox">SymbolD1_sm</Image>
+	<Box height="300" width="200"/>
+	<Image id="poison">SymbolD1_sm</Image>
 </Label>
