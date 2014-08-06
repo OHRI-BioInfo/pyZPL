@@ -116,16 +116,16 @@ def generateLayout(parent):
             widthUsed += elementSpacing
         firstElement = False
             
-        element.x = widthUsed-element.width
-        element.y = heightUsed+margin+rownum*elementSpacing
+        element.x = widthUsed-element.width+parent.x
+        element.y = heightUsed+margin+rownum*elementSpacing#+parent.y
         element.row = rownum
     
     rowWidths.append(widthUsed)
     print rowWidths
     
     for element in list(parent.children):
-        element.x += (parent.width-rowWidths[element.row])/2+margin
-        ZPLLayout += "^FO"+str(element.x)+","+str(element.y)+element.ZPL
+        element.x += (parent.width-rowWidths[element.row])/2
+        ZPLLayout += "^FO"+str(element.x+margin)+","+str(element.y+margin)+element.ZPL
         if len(element.children) is not 0:
             generateLayout(element)
 
