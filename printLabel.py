@@ -3,7 +3,7 @@
 DPI = 203 #dots/inch
 width = 4 #inches
 height = 6 #inches
-elementSpacing = 100 #dots
+elementSpacing = 50 #dots
 margin = 40 #dots
 
 import xml.etree.ElementTree as ET
@@ -82,25 +82,20 @@ def processElements(root,nested):
                 
         if element.tag == "Box":
             border = int(element.get("border"))
-
             newElement.ZPL = "^GB"+str(newElement.width)+","+str(newElement.height)+","+str(border)+"^FS"
-
-            print list(newElement.XMLElement)
-            for child in list(newElement.XMLElement):
-                childElement = ZPLElement()
-                childElement.XMLElement = child
-                processElements(childElement,True)
+            processElements(newElement,True)
         #if element.tag == "Text":
         
         root.children.append(newElement)
-        
+
+rowWidths = []
+
 def generateLayout(parent):
     global ZPLLayout
     widthUsed = 0
     heightUsed = 0
     rowHeight = 0
     
-    rowWidths = []
     rownum = 0
     firstElement = True
 
@@ -130,8 +125,8 @@ def generateLayout(parent):
     for element in list(parent.children):
         element.x += (parent.width-rowWidths[element.row])/2+margin
         ZPLLayout += "^FO"+str(element.x)+","+str(element.y)+element.ZPL
-        #if len(element.children) is not 0:
-        #    generateLayout(element)
+        if len(element.children) is not 0:
+            generateLayout(element)
 
 processElements(rootElement,False)
 generateLayout(rootElement)
