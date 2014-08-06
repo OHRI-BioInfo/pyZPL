@@ -27,7 +27,7 @@ rootElement.height = labelHeight
 rootElement.type = "Root"
 rootElement.XMLElement = root
 
-ZPLLayout = "^CF0,30,30^XA"
+ZPLLayout = "^XA^CF0,30,30"
 
 customIndex = 1
 
@@ -84,7 +84,9 @@ def processElements(root,nested):
             border = int(element.get("border"))
             newElement.ZPL = "^GB"+str(newElement.width)+","+str(newElement.height)+","+str(border)+"^FS"
             processElements(newElement,True)
-        #if element.tag == "Text":
+        if element.tag == "Text":
+            newElement.ZPL = "^FB"+str(newElement.width)+","+str(newElement.width/30)+\
+            "^FD"+newElement.XMLElement.text+"^FS"
         
         root.children.append(newElement)
 
@@ -117,7 +119,7 @@ def generateLayout(parent):
         firstElement = False
             
         element.x = widthUsed-element.width+parent.x
-        element.y = heightUsed+margin+rownum*elementSpacing#+parent.y
+        element.y = heightUsed+margin+rownum*elementSpacing+parent.y
         element.row = rownum
     
     rowWidths.append(widthUsed)
