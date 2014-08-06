@@ -88,18 +88,19 @@ def processElements(root,nested):
         
         root.children.append(newElement)
 
-rowWidths = []
-
 def generateLayout(parent):
     global ZPLLayout
     widthUsed = 0
     heightUsed = 0
     rowHeight = 0
+    rowWidths = []
     
     rownum = 0
     firstElement = True
 
     for element in list(parent.children):
+        if element.width > parent.width:
+            element.width = parent.width
         widthUsed += element.width
         if rowHeight < element.height:
             rowHeight = element.height
