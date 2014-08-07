@@ -8,8 +8,6 @@
 <?php
 
 $file = "/home/jbrooks/pyZPL/testlabel.xml";
-
-$parser = xml_parser_create();
 $tree = simplexml_load_file($file);
 
 $customElements = $tree->xpath("//*[@id]");
@@ -17,7 +15,7 @@ $customElements = $tree->xpath("//*[@id]");
 foreach($customElements as $element){
     $fixed = "";
     if($element->attributes()->fixed)
-        $fixed = "disabled";
+        $fixed = "readonly";
     echo '<tr>';
     $attributeID = $element->attributes()->id;
     echo '<td>'.$attributeID."</td><br />";
