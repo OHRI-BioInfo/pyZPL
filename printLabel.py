@@ -37,6 +37,21 @@ ZPLLayout = "^XA^CF0,30,30"
 
 customIndex = 1
 
+def calculateTextDimensions(text,maxWidth):
+    lines = len(str(text))*30/maxWidth
+    cols = len(str(text))*30
+    if cols > maxWidth:
+        cols = maxWidth
+    return (cols,lines)
+    
+def truncateText(text,maxWidth,maxHeight):
+    dimensions = calculateTextDimensions(text,maxWidth)
+    maxLines = maxHeight/30
+    if dimensions[1] > maxLines:
+        return text[:dimensions[0]*maxLines]
+    else:
+        return text
+
 def processElements(root,nested):
     global rowHeight,currentRow,currentRowElement,elementSpacing,remainingWidth,ZPLLayout
 
@@ -78,7 +93,8 @@ def processElements(root,nested):
                 text = jsonObject[elementID]['data']
             else:
                 text = element.text
-            newElement.ZPL = "^FBwidth,lines^FD"+text+"^FS"
+            newElement.ZPL = "^FBwidth,lines^FDtext^FS"
+            newElement.text = text
         
         root.children.append(newElement)
 
@@ -97,6 +113,11 @@ def generateLayout(parent):
             element.width = parent.width
         if element.height > parent.height or element.height == 0:
             element.height = parent.height
+        if element.type == "Text":
+            element.text = truncateText(element.text,element.width,element.height)
+            dimensions = calculateTextDimensions(element.text,element.width)
+            element.width = dimensions[0]
+            element.height = dimensions[1]
         widthUsed += element.width
         if rowHeight < element.height:
             rowHeight = element.height
@@ -124,6 +145,7 @@ def generateLayout(parent):
         element.ZPL = element.ZPL.replace("width",str(element.width))
         if element.type == "Text":
             element.ZPL = element.ZPL.replace("lines",str(element.height/30))
+            element.ZPL = element.ZPL.replace("text",element.text)
         else:
             element.ZPL = element.ZPL.replace("height",str(element.height))
         ZPLLayout += "^FO"+str(element.x+margin)+","+str(element.y+margin)+element.ZPL
