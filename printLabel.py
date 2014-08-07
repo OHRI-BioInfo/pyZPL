@@ -29,7 +29,8 @@ rootElement.type = "Root"
 rootElement.XMLElement = root
 
 #jsonFile = open("testJSON.json")
-jsonData = sys.argv[1]
+#jsonData = sys.argv[1]
+jsonData = '{"sample_text":{"data":"This is text. The text is nice.","visible":true},"title":{"data":"","visible":false},"poison":{"data":"SymbolD1_sm","visible":false}}'
 jsonObject = json.loads(jsonData)
 
 ZPLLayout = "^XA^CF0,30,30"
@@ -61,22 +62,22 @@ def processElements(root,nested):
                 border = 10
 
             if height is not None:
-                element.height = int(height)
+                newElement.height = int(height)
             if width is not None:
-                element.width = int(width)
+                newElement.width = int(width)
             newElement.ZPL = "^GBwidth,height,"+str(border)+"^FS"
             processElements(newElement,True)
 
         if element.tag == "Text":
             if height is not None:
-                element.height = int(height)
+                newElement.height = int(height)
             if width is not None:
-                element.width = int(width)
+                newElement.width = int(width)
             text = ""
             if elementID is not None:
                 text = jsonObject[elementID]['data']
             else:
-                text = element.XMLElement.text
+                text = element.text
             newElement.ZPL = "^FBwidth,lines^FD"+text+"^FS"
         
         root.children.append(newElement)
@@ -92,9 +93,9 @@ def generateLayout(parent):
     firstElement = True
 
     for element in list(parent.children):
-        if element.width > parent.width:
+        if element.width > parent.width or element.width == 0:
             element.width = parent.width
-        if element.height > parent.height:
+        if element.height > parent.height or element.height == 0:
             element.height = parent.height
         widthUsed += element.width
         if rowHeight < element.height:
@@ -110,14 +111,14 @@ def generateLayout(parent):
         if not firstElement:
             widthUsed += elementSpacing
         firstElement = False
-            
+
         element.x = widthUsed-element.width+parent.x
         element.y = heightUsed+margin+rownum*elementSpacing+parent.y
         element.row = rownum
     
     rowWidths.append(widthUsed)
     print rowWidths
-    
+
     for element in list(parent.children):
         element.x += (parent.width-rowWidths[element.row])/2
         element.ZPL = element.ZPL.replace("width",str(element.width))

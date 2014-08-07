@@ -27,4 +27,6 @@ $output = array();
 exec($command,$output);
 
 echo $output[sizeof($output)-1];
+echo "<br><br>JSON Data: ";
+echo $encoded;
 ?>
