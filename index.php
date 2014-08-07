@@ -1,21 +1,26 @@
+<html>
+<head>
+</head>
+<body>
+<form action="submit.php" method="post">
 <?php
 
-$file = "testlabel.xml";
+$file = "/home/jbrooks/pyZPL/testlabel.xml";
 
 $parser = xml_parser_create();
-$data = file_get_contents($file);
+$tree = simplexml_load_file($file);
 
-function startElementHandler($parser, $name, $attribs){
-     if(array_key_exists("ID",$attribs))
-        print 'yep';
+$customElements = $tree->xpath("//*[@id]");
+
+foreach($customElements as $element){
+    $attributeID = $element->attributes()->id;
+    echo '<input type="checkbox" name="'.$attributeID.'_bool">';
+    echo $element->attributes()->id."<br />";
 }
-
-function endElementHandler($parser, $name){
-    return;
-}
-
-xml_set_element_handler($parser,"startElementHandler","endElementHandler");
-
-print xml_parse($parser,$data,true);
 
 ?>
+<br />
+<input type="submit"> 
+</form>
+</body>
+</html>
