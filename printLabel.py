@@ -9,6 +9,7 @@ margin = 40 #dots
 import xml.etree.ElementTree as ET
 import sys
 import re
+import json
 from pyZPL import *
 
 labelWidth = DPI*width-margin*2
@@ -27,42 +28,54 @@ rootElement.height = labelHeight
 rootElement.type = "Root"
 rootElement.XMLElement = root
 
+jsonFile = open("testJSON.json")
+jsonFileData = jsonFile.read()
+jsonObject = json.loads(jsonFileData)
+
 ZPLLayout = "^XA^CF0,30,30"
 
 customIndex = 1
 
 def processElements(root,nested):
     global rowHeight,currentRow,currentRowElement,elementSpacing,remainingWidth,ZPLLayout
-    height = element.get("height")
-	width = element.get("width")
 
     for element in list(root.XMLElement):
+        height = element.get("height")
+        width = element.get("width")
+        elementID = element.get("id")
         newElement = ZPLElement()
+        if elementID is not None:
+            elementID = elementID.replace(" ","_")
+            newElement.id = elementID
         newElement.type = element.tag
         newElement.XMLElement = element
                 
         if element.tag == "Box":
-			border = element.get("border")
+            border = element.get("border")
 
-			if border is not None:
-				border = int(border)
-			else:
-				border = 10
+            if border is not None:
+                border = int(border)
+            else:
+                border = 10
 
-			if height is not None:
-				element.height = int(height)
-			if width is not None:
-				element.width = int(width)
+            if height is not None:
+                element.height = int(height)
+            if width is not None:
+                element.width = int(width)
             newElement.ZPL = "^GBwidth,height,"+str(border)+"^FS"
             processElements(newElement,True)
 
         if element.tag == "Text":
-			if height is not None:
-				element.height = int(height)
-			if width is not None:
-				element.width = int(width)
-
-            newElement.ZPL = "^FBwidth,lines^FD"+newElement.XMLElement.text+"^FS"
+            if height is not None:
+                element.height = int(height)
+            if width is not None:
+                element.width = int(width)
+            text = ""
+            if elementID is not None:
+                text = jsonObject[elementID]['data']
+            else:
+                text = element.XMLElement.text
+            newElement.ZPL = "^FBwidth,lines^FD"+text+"^FS"
         
         root.children.append(newElement)
 
@@ -80,7 +93,7 @@ def generateLayout(parent):
         if element.width > parent.width:
             element.width = parent.width
         if element.height > parent.height:
-			element.height = parent.height
+            element.height = parent.height
         widthUsed += element.width
         if rowHeight < element.height:
             rowHeight = element.height
@@ -107,9 +120,9 @@ def generateLayout(parent):
         element.x += (parent.width-rowWidths[element.row])/2
         element.ZPL = element.ZPL.replace("width",str(element.width))
         if element.type == "Text":
-			element.ZPL = element.ZPL.replace("lines",str(element.height/30))
-		else:
-			element.ZPL = element.ZPL.replace("height",str(element.height))
+            element.ZPL = element.ZPL.replace("lines",str(element.height/30))
+        else:
+            element.ZPL = element.ZPL.replace("height",str(element.height))
         ZPLLayout += "^FO"+str(element.x+margin)+","+str(element.y+margin)+element.ZPL
         if len(element.children) is not 0:
             generateLayout(element)
