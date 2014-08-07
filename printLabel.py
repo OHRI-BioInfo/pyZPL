@@ -20,7 +20,7 @@ dotshigh = labelHeight
 
 currentDown = margin
 
-tree = ET.parse("testlabel.xml")
+tree = ET.parse("/home/jbrooks/pyZPL/testlabel.xml")
 root = tree.getroot()
 rootElement = ZPLElement()
 rootElement.width = labelWidth
@@ -28,9 +28,9 @@ rootElement.height = labelHeight
 rootElement.type = "Root"
 rootElement.XMLElement = root
 
-jsonFile = open("testJSON.json")
-jsonFileData = jsonFile.read()
-jsonObject = json.loads(jsonFileData)
+#jsonFile = open("testJSON.json")
+jsonData = sys.argv[1]
+jsonObject = json.loads(jsonData)
 
 ZPLLayout = "^XA^CF0,30,30"
 
@@ -46,6 +46,8 @@ def processElements(root,nested):
         newElement = ZPLElement()
         if elementID is not None:
             elementID = elementID.replace(" ","_")
+            if not bool(jsonObject[elementID]['visible']):
+                continue
             newElement.id = elementID
         newElement.type = element.tag
         newElement.XMLElement = element

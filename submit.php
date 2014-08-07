@@ -20,6 +20,11 @@ foreach($_POST as $key => $value){
     $elements[$id] = $element;
 }
 
-echo json_encode($elements);
+$encoded = json_encode($elements);
+$command = "python /home/jbrooks/pyZPL/printLabel.py ".escapeshellarg($encoded);
+#$command = escapeshellcmd($command);
+$output = array();
+exec($command,$output);
 
+echo $output[sizeof($output)-1];
 ?>
