@@ -12,6 +12,7 @@ import re
 import json
 import serial
 import math
+from bmpread import *
 from pyZPL import *
 
 labelWidth = DPI*width-margin*2
@@ -32,7 +33,7 @@ rootElement.XMLElement = root
 
 #jsonFile = open("testJSON.json")
 #jsonData = sys.argv[1]
-jsonData = '{"sample_text":{"data":"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent hendrerit lectus quam, ut vestibulum dolor consectetur a. Sed urna erat, congue ornare justo non, posuere gravida neque. Maecenas convallis augue at odio lobortis, ut interdum mauris luctus. Maecenas eu nibh elit. Vestibulum id vulputate diam. Etiam facilisis elit sit amet metus commodo imperdiet. Donec ornare placerat gravida. Nulla a bibendum neque.","visible":true},"title":{"data":"","visible":false},"poison":{"data":"SymbolD1_sm","visible":false}}'
+jsonData = '{"sample_text":{"data":"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent hendrerit lectus quam, ut vestibulum dolor consectetur a. Sed urna erat, congue ornare justo non, posuere gravida neque. Maecenas convallis augue at odio lobortis, ut interdum mauris luctus. Maecenas eu nibh elit. Vestibulum id vulputate diam. Etiam facilisis elit sit amet metus commodo imperdiet. Donec ornare placerat gravida. Nulla a bibendum neque.","visible":true},"title":{"data":"","visible":false},"poison":{"data":"SymbolD1_sm.bmp","visible":true}}'
 jsonObject = json.loads(jsonData)
 
 ser = serial.Serial(0)
@@ -102,6 +103,26 @@ def processElements(root,nested):
                 text = element.text
             newElement.ZPL = "^FBwidth,lines^FDtext^FS"
             newElement.text = text
+            
+        if element.tag == "Image":
+            imageFile = ""
+            if elementID is not None:
+                imageFile = jsonObject[elementID]['data']
+            else:
+                imageFile = element.text
+            element.imageFile = imageFile
+
+            if height is not None:
+                newElement.height = int(height)
+            if width is not None:
+                newElement.width = int(width)
+            newElement.image = getImg(imageFile,newElement.width,newElement.height)
+            
+            if height is None:
+                newElement.height = newElement.image.height
+            if width is None:
+                newElement.width = newElement.image.width
+            ZPLLayout = newElement.image.downloadCmd + ZPLLayout
         
         root.children.append(newElement)
 
@@ -116,16 +137,21 @@ def generateLayout(parent):
     firstElement = True
 
     for element in list(parent.children):
+        tooBig = False
         if element.width > parent.width or element.width == 0:
             element.width = parent.width
+            tooBig = True
         if element.height > parent.height or element.height == 0:
             element.height = parent.height
+            tooBig = True
+        if tooBig and element.type == "Image":
+            element.image = getImg(element.imageFile,element.width,element.height)
+            element.ZPL = element.image.downloadCmd
         if element.type == "Text":
             element.text = truncateText(element.text,parent.width,parent.height)
             dimensions = calculateTextDimensions(element.text,parent.width)
             element.width = dimensions[0]
             element.height = dimensions[1]*fontHeight
-            print element.width
         widthUsed += element.width
         if rowHeight < element.height:
             rowHeight = element.height
@@ -158,6 +184,8 @@ def generateLayout(parent):
             element.ZPL = element.ZPL.replace("text",element.text)
         else:
             element.ZPL = element.ZPL.replace("height",str(element.height))
+        if element.type == "Image":
+            element.ZPL += "^XGR:SAMPLE.GRF,1,1^FS"
         ZPLLayout += "^FO"+str(element.x+margin)+","+str(element.y+margin)+element.ZPL
         if len(element.children) is not 0:
             generateLayout(element)
@@ -167,5 +195,5 @@ generateLayout(rootElement)
 ZPLLayout += "^XZ"
 
 print ZPLLayout
-ser.write(ZPLLayout)
+#ser.write(ZPLLayout)
 ser.close()

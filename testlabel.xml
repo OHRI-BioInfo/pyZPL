@@ -7,5 +7,5 @@
 		<Text id="title"/>
 	</Box>
 	<Box height="300" width="200"/>
-	<Image id="poison" fixed="true">SymbolD1_sm</Image>
+	<Image id="poison" fixed="true">SymbolD1_sm.bmp</Image>
 </Label>

@@ -8,6 +8,11 @@ class ZPLElement:
     type = ""
     ZPL = ""
     row = 0
+    
+class ZPLImage:
+    width = 0
+    height = 0
+    downloadCmd = ""
 
 class ZPLRow:
     def __init__(self):
