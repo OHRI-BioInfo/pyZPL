@@ -31,8 +31,8 @@ rootElement.type = "Root"
 rootElement.XMLElement = root
 
 #jsonFile = open("testJSON.json")
-jsonData = sys.argv[1]
-#jsonData = '{"sample_text":{"data":"Good text!","visible":true},"title":{"data":"","visible":false},"poison":{"data":"SymbolD1_sm","visible":false}}'
+#jsonData = sys.argv[1]
+jsonData = '{"sample_text":{"data":"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent hendrerit lectus quam, ut vestibulum dolor consectetur a. Sed urna erat, congue ornare justo non, posuere gravida neque. Maecenas convallis augue at odio lobortis, ut interdum mauris luctus. Maecenas eu nibh elit. Vestibulum id vulputate diam. Etiam facilisis elit sit amet metus commodo imperdiet. Donec ornare placerat gravida. Nulla a bibendum neque.","visible":true},"title":{"data":"","visible":false},"poison":{"data":"SymbolD1_sm","visible":false}}'
 jsonObject = json.loads(jsonData)
 
 ser = serial.Serial(0)
@@ -53,9 +53,9 @@ def calculateTextDimensions(text,maxWidth):
     
 def truncateText(text,maxWidth,maxHeight):
     dimensions = calculateTextDimensions(text,maxWidth)
-    maxLines = math.ceil(maxHeight/float(fontHeight))
+    maxLines = int(math.ceil(maxHeight/float(fontHeight)))
     if dimensions[1] > maxLines:
-        return text[:dimensions[0]*maxLines]
+        return text[:int(math.ceil(dimensions[0]/float(fontWidth)))*maxLines]
     else:
         return text
 
@@ -143,6 +143,8 @@ def generateLayout(parent):
 
         element.x = widthUsed-element.width+parent.x
         element.y = heightUsed+margin+rownum*elementSpacing+parent.y
+        if element.x > parent.x+parent.width or element.y > parent.y+parent.height:
+            element.ZPL = ""
         element.row = rownum
     
     rowWidths.append(widthUsed)
