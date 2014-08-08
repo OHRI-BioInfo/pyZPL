@@ -10,6 +10,8 @@ import xml.etree.ElementTree as ET
 import sys
 import re
 import json
+import serial
+import math
 from pyZPL import *
 
 labelWidth = DPI*width-margin*2
@@ -29,24 +31,29 @@ rootElement.type = "Root"
 rootElement.XMLElement = root
 
 #jsonFile = open("testJSON.json")
-#jsonData = sys.argv[1]
-jsonData = '{"sample_text":{"data":"This is text. The text is nice.","visible":true},"title":{"data":"","visible":false},"poison":{"data":"SymbolD1_sm","visible":false}}'
+jsonData = sys.argv[1]
+#jsonData = '{"sample_text":{"data":"Good text!","visible":true},"title":{"data":"","visible":false},"poison":{"data":"SymbolD1_sm","visible":false}}'
 jsonObject = json.loads(jsonData)
 
-ZPLLayout = "^XA^CF0,30,30"
+ser = serial.Serial(0)
+print ser.name
+
+fontHeight = 30
+fontWidth = int(math.ceil((4.0/5.0)*fontHeight))
+ZPLLayout = "^XA^CF0,"+str(fontHeight)
 
 customIndex = 1
 
 def calculateTextDimensions(text,maxWidth):
-    lines = len(str(text))*30/maxWidth
-    cols = len(str(text))*30
+    lines = int(math.ceil(len(str(text))*float(fontWidth)/maxWidth))
+    cols = len(str(text))*fontWidth
     if cols > maxWidth:
         cols = maxWidth
     return (cols,lines)
     
 def truncateText(text,maxWidth,maxHeight):
     dimensions = calculateTextDimensions(text,maxWidth)
-    maxLines = maxHeight/30
+    maxLines = math.ceil(maxHeight/float(fontHeight))
     if dimensions[1] > maxLines:
         return text[:dimensions[0]*maxLines]
     else:
@@ -114,10 +121,11 @@ def generateLayout(parent):
         if element.height > parent.height or element.height == 0:
             element.height = parent.height
         if element.type == "Text":
-            element.text = truncateText(element.text,element.width,element.height)
-            dimensions = calculateTextDimensions(element.text,element.width)
+            element.text = truncateText(element.text,parent.width,parent.height)
+            dimensions = calculateTextDimensions(element.text,parent.width)
             element.width = dimensions[0]
-            element.height = dimensions[1]
+            element.height = dimensions[1]*fontHeight
+            print element.width
         widthUsed += element.width
         if rowHeight < element.height:
             rowHeight = element.height
@@ -144,7 +152,7 @@ def generateLayout(parent):
         element.x += (parent.width-rowWidths[element.row])/2
         element.ZPL = element.ZPL.replace("width",str(element.width))
         if element.type == "Text":
-            element.ZPL = element.ZPL.replace("lines",str(element.height/30))
+            element.ZPL = element.ZPL.replace("lines",str(element.height/fontHeight))
             element.ZPL = element.ZPL.replace("text",element.text)
         else:
             element.ZPL = element.ZPL.replace("height",str(element.height))
@@ -157,3 +165,5 @@ generateLayout(rootElement)
 ZPLLayout += "^XZ"
 
 print ZPLLayout
+ser.write(ZPLLayout)
+ser.close()
