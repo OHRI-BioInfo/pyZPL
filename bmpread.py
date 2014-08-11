@@ -20,7 +20,7 @@ def convertImg(image,imageName,width,height):
     if height is not 0:
         reizeStr += " -height "+str(height)
         resize = True
-    
+
     if resize:
         resizeStr += " "+imageName+".bmp"
         os.system(resizeStr)
@@ -49,26 +49,20 @@ def getImg(image,width,height):
     f.seek(int(binascii.hexlify(arrayoffset),16))
     print int(binascii.hexlify(arrayoffset),16)
     imagedata = bytearray()
-    rowsize = int(round((img.width+31)/32.0*4.0))
-    print size
-    for i in range(1,size/rowsize):
-        for j in range(1,rowsize-3):
+    rowsize = int(round(size/img.height))
+    padding = 4-(int(round(img.width/8.0))%4)
+    for i in range(0,size/rowsize):
+        for j in range(0,rowsize-padding):
             hexr = int(binascii.hexlify(f.read(1)),16)^0xff
-            #hex = int('DD',16)
             hex1 = hexr>>4
             hex2 = hexr&0x0f
-            #print "read:"+hex(hex1)
-            #print "read2:"+hex(hex2)
             reversed_hex1 = sum(1<<(4-1-i) for i in range(4) if hex1>>i&1)
             reversed_hex2 = sum(1<<(4-1-i) for i in range(4) if hex2>>i&1)
             concat = str(hex(reversed_hex1))[2]+str(hex(reversed_hex2))[2]
-            #imagedata.append(reversed_hex1)
-            #imagedata.append(reversed_hex2)
             imagedata.append(int(concat,16))
-            #print str(reversed_hex1)+str(reversed_hex2)
-        f.seek(3,1)
-
+        f.seek(padding,1)
     imagedatastr = binascii.hexlify(imagedata)[::-1]
+
     if len(imagedatastr)%2 is not 0:
         print "damn"
 

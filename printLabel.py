@@ -195,5 +195,6 @@ generateLayout(rootElement)
 ZPLLayout += "^XZ"
 
 print ZPLLayout
-#ser.write(ZPLLayout)
+delImages = "^XA^IDR:*.*^FS^XZ"
+#ser.write(delImages+ZPLLayout)
 ser.close()
