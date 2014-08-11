@@ -47,38 +47,30 @@ def getImg(image,width,height):
     size = int(binascii.hexlify(sizebytes),16)
 
     f.seek(int(binascii.hexlify(arrayoffset),16))
+    print int(binascii.hexlify(arrayoffset),16)
     imagedata = bytearray()
-    rowsize = int(4.0 * round(((img.width+31)/32.0*4.0)/4.0))
-    #print rowsize
+    rowsize = int(round((img.width+31)/32.0*4.0))
+    print size
     for i in range(1,size/rowsize):
-        for j in range(0,rowsize-3):
-            hex = int(binascii.hexlify(f.read(1)),16)
+        for j in range(1,rowsize-3):
+            hexr = int(binascii.hexlify(f.read(1)),16)^0xff
             #hex = int('DD',16)
-            hex1 = hex>>4
-            hex2 = hex<<4
-            hex2 = hex2>>4
-            #print "read:"+str(hex)
+            hex1 = hexr>>4
+            hex2 = hexr&0x0f
+            #print "read:"+hex(hex1)
+            #print "read2:"+hex(hex2)
             reversed_hex1 = sum(1<<(4-1-i) for i in range(4) if hex1>>i&1)
             reversed_hex2 = sum(1<<(4-1-i) for i in range(4) if hex2>>i&1)
-            imagedata.append(reversed_hex1^0xFF)
-            imagedata.append(reversed_hex2^0xFF)
+            concat = str(hex(reversed_hex1))[2]+str(hex(reversed_hex2))[2]
+            #imagedata.append(reversed_hex1)
+            #imagedata.append(reversed_hex2)
+            imagedata.append(int(concat,16))
             #print str(reversed_hex1)+str(reversed_hex2)
         f.seek(3,1)
 
-    imagedatastr = binascii.hexlify(imagedata)
+    imagedatastr = binascii.hexlify(imagedata)[::-1]
     if len(imagedatastr)%2 is not 0:
         print "damn"
 
-    reversedIDS = ""
-    i = 0
-    print len(imagedatastr)
-    while(i<len(imagedatastr)):
-        print len(imagedatastr)-i-2
-        print len(imagedatastr)-i-1
-        reversedIDS += imagedatastr[len(imagedatastr)-i-2:len(imagedatastr)-i-1]
-        i += 2
-    print reversedIDS
-
-    #reversedIDS = imagedatastr
-    img.downloadCmd = "~DGR:SAMPLE.GRF,"+str(len(reversedIDS)/2)+","+str(img.width*img.height/8/img.height)+","+reversedIDS
+    img.downloadCmd = "~DGR:SAMPLE.GRF,"+str(len(imagedatastr)/2)+","+str(img.width*img.height/8/img.height)+","+imagedatastr
     return img
