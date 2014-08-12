@@ -9,6 +9,12 @@ class ZPLElement:
     ZPL = ""
     row = 0
     
+class ZPLCustomItem:
+    fixed = ""
+    data = ""
+    ID = ""
+    type = ""
+
 class ZPLImage:
     width = 0
     height = 0
