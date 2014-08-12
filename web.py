@@ -1,5 +1,6 @@
 from flask import *
 from pyZPL import *
+from printLabel import printLabel
 import xml.etree.ElementTree as ET
 
 app = Flask(__name__)
@@ -8,7 +9,7 @@ app = Flask(__name__)
 tree = ET.parse("/home/jbrooks/pyZPL/testlabel.xml")
 customElements = tree.findall(".//*[@id]")
 
-items = []
+customItems = []
 for element in customElements:
     newItem = ZPLCustomItem()
     newItem.ID = element.get("id")
@@ -16,11 +17,32 @@ for element in customElements:
     newItem.type = element.tag
     if element.get("fixed"):
         newItem.fixed = "readonly"
-    items.append(newItem)
+    customItems.append(newItem)
 
 @app.route('/')
 def root():
-    return render_template("index.html",items=items)
+    return render_template("index.html",items=customItems)
+    
+@app.route('/print', methods=['POST'])
+def print_():
+    customItems = []
+    if request.method == 'POST':
+        for key,value in request.form.iteritems():
+            newItem = ZPLCustomItem()
+            split = key.split('_')
+            newItem.type = split[len(split)-1]
+            newItem.ID = str.join("",split[:len(split)-1])
+
+            newItem.data = request.form[newItem.ID+"_string"]
+            try:
+                request.form[newItem.ID+"_bool"]
+                newItem.visible = True
+            except KeyError:
+                newItem.visible = False
+            customItems.append(newItem)
+        return printLabel(customItems)
+    else:
+        return "can has post?"
 
 if __name__ == '__main__':
     app.debug = True

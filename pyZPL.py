@@ -14,6 +14,7 @@ class ZPLCustomItem:
     data = ""
     ID = ""
     type = ""
+    visible = False
 
 class ZPLImage:
     width = 0

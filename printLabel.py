@@ -9,7 +9,7 @@ margin = 40 #dots
 import xml.etree.ElementTree as ET
 import sys
 import re
-import json
+#import json
 import serial
 import math
 from bmpread import *
@@ -33,17 +33,19 @@ rootElement.XMLElement = root
 
 #jsonFile = open("testJSON.json")
 #jsonData = sys.argv[1]
-jsonData = '{"sample_text":{"data":"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent hendrerit lectus quam, ut vestibulum dolor consectetur a. Sed urna erat, congue ornare justo non, posuere gravida neque. Maecenas convallis augue at odio lobortis, ut interdum mauris luctus. Maecenas eu nibh elit. Vestibulum id vulputate diam. Etiam facilisis elit sit amet metus commodo imperdiet. Donec ornare placerat gravida. Nulla a bibendum neque.","visible":true},"title":{"data":"","visible":false},"poison":{"data":"SymbolD1_sm.bmp","visible":true}}'
-jsonObject = json.loads(jsonData)
-
-ser = serial.Serial(0)
-print ser.name
+#jsonData = '{"sample_text":{"data":"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent hendrerit lectus quam, ut vestibulum dolor consectetur a. Sed urna erat, congue ornare justo non, posuere gravida neque. Maecenas convallis augue at odio lobortis, ut interdum mauris luctus. Maecenas eu nibh elit. Vestibulum id vulputate diam. Etiam facilisis elit sit amet metus commodo imperdiet. Donec ornare placerat gravida. Nulla a bibendum neque.","visible":true},"title":{"data":"","visible":false},"poison":{"data":"SymbolD1_sm.bmp","visible":true}}'
+#jsonObject = json.loads(jsonData)
 
 fontHeight = 30
 fontWidth = int(math.ceil((4.0/5.0)*fontHeight))
 ZPLLayout = "^XA^CF0,"+str(fontHeight)
 
 customIndex = 1
+
+def findItem(itemList,ID):
+    for item in itemList:
+        if item.ID == ID:
+            return item
 
 def calculateTextDimensions(text,maxWidth):
     lines = int(math.ceil(len(str(text))*float(fontWidth)/maxWidth))
@@ -60,7 +62,7 @@ def truncateText(text,maxWidth,maxHeight):
     else:
         return text
 
-def processElements(root,nested):
+def processElements(root,customItems):
     global rowHeight,currentRow,currentRowElement,elementSpacing,remainingWidth,ZPLLayout
 
     for element in list(root.XMLElement):
@@ -68,11 +70,12 @@ def processElements(root,nested):
         width = element.get("width")
         elementID = element.get("id")
         newElement = ZPLElement()
+        item = None
         if elementID is not None:
-            elementID = elementID.replace(" ","_")
-            if not bool(jsonObject[elementID]['visible']):
+            item = findItem(customItems,elementID)
+            if not bool(item.visible):
                 continue
-            newElement.id = elementID
+            newElement.ID = elementID
         newElement.type = element.tag
         newElement.XMLElement = element
                 
@@ -89,7 +92,7 @@ def processElements(root,nested):
             if width is not None:
                 newElement.width = int(width)
             newElement.ZPL = "^GBwidth,height,"+str(border)+"^FS"
-            processElements(newElement,True)
+            processElements(newElement,customItems)
 
         if element.tag == "Text":
             if height is not None:
@@ -98,7 +101,7 @@ def processElements(root,nested):
                 newElement.width = int(width)
             text = ""
             if elementID is not None:
-                text = jsonObject[elementID]['data']
+                text = item.data
             else:
                 text = element.text
             newElement.ZPL = "^FBwidth,lines^FDtext^FS"
@@ -107,7 +110,7 @@ def processElements(root,nested):
         if element.tag == "Image":
             imageFile = ""
             if elementID is not None:
-                imageFile = jsonObject[elementID]['data']
+                imageFile = item.data
             else:
                 imageFile = element.text
             element.imageFile = imageFile
@@ -190,11 +193,14 @@ def generateLayout(parent):
         if len(element.children) is not 0:
             generateLayout(element)
 
-processElements(rootElement,False)
-generateLayout(rootElement)
-ZPLLayout += "^XZ"
-
-print ZPLLayout
-delImages = "^XA^IDR:*.*^FS^XZ"
-#ser.write(delImages+ZPLLayout)
-ser.close()
+def printLabel(customItems):
+    global ZPLLayout,rootElement
+    ser = serial.Serial(0)
+    
+    processElements(rootElement,customItems)
+    generateLayout(rootElement)
+    ZPLLayout += "^XZ"
+    delImages = "^XA^IDR:*.*^FS^XZ"
+    ser.write(delImages+ZPLLayout)
+    ser.close()
+    return ZPLLayout
