@@ -25,7 +25,7 @@ def root():
     
 @app.route('/print', methods=['POST'])
 def print_():
-    customItems = []
+    customItemsModified = []
     if request.method == 'POST':
         for key,value in request.form.iteritems():
             newItem = ZPLCustomItem()
@@ -39,8 +39,8 @@ def print_():
                 newItem.visible = True
             except KeyError:
                 newItem.visible = False
-            customItems.append(newItem)
-        return printLabel(customItems)
+            customItemsModified.append(newItem)
+        return printLabel(customItemsModified)
     else:
         return "can has post?"
 

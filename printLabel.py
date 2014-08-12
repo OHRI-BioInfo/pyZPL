@@ -25,11 +25,6 @@ currentDown = margin
 
 tree = ET.parse("/home/jbrooks/pyZPL/testlabel.xml")
 root = tree.getroot()
-rootElement = ZPLElement()
-rootElement.width = labelWidth
-rootElement.height = labelHeight
-rootElement.type = "Root"
-rootElement.XMLElement = root
 
 #jsonFile = open("testJSON.json")
 #jsonData = sys.argv[1]
@@ -39,8 +34,6 @@ rootElement.XMLElement = root
 fontHeight = 30
 fontWidth = int(math.ceil((4.0/5.0)*fontHeight))
 ZPLLayout = "^XA^CF0,"+str(fontHeight)
-
-customIndex = 1
 
 def findItem(itemList,ID):
     for item in itemList:
@@ -53,7 +46,7 @@ def calculateTextDimensions(text,maxWidth):
     if cols > maxWidth:
         cols = maxWidth
     return (cols,lines)
-    
+
 def truncateText(text,maxWidth,maxHeight):
     dimensions = calculateTextDimensions(text,maxWidth)
     maxLines = int(math.ceil(maxHeight/float(fontHeight)))
@@ -78,7 +71,7 @@ def processElements(root,customItems):
             newElement.ID = elementID
         newElement.type = element.tag
         newElement.XMLElement = element
-                
+
         if element.tag == "Box":
             border = element.get("border")
 
@@ -106,7 +99,7 @@ def processElements(root,customItems):
                 text = element.text
             newElement.ZPL = "^FBwidth,lines^FDtext^FS"
             newElement.text = text
-            
+
         if element.tag == "Image":
             imageFile = ""
             if elementID is not None:
@@ -120,13 +113,13 @@ def processElements(root,customItems):
             if width is not None:
                 newElement.width = int(width)
             newElement.image = getImg(imageFile,newElement.width,newElement.height)
-            
+
             if height is None:
                 newElement.height = newElement.image.height
             if width is None:
                 newElement.width = newElement.image.width
             ZPLLayout = newElement.image.downloadCmd + ZPLLayout
-        
+
         root.children.append(newElement)
 
 def generateLayout(parent):
@@ -135,7 +128,7 @@ def generateLayout(parent):
     heightUsed = 0
     rowHeight = 0
     rowWidths = []
-    
+
     rownum = 0
     firstElement = True
 
@@ -165,7 +158,7 @@ def generateLayout(parent):
             widthUsed = element.width
             rownum += 1
             firstElement = True
-            
+
         if not firstElement:
             widthUsed += elementSpacing
         firstElement = False
@@ -175,7 +168,7 @@ def generateLayout(parent):
         if element.x > parent.x+parent.width or element.y > parent.y+parent.height:
             element.ZPL = ""
         element.row = rownum
-    
+
     rowWidths.append(widthUsed)
     print rowWidths
 
@@ -194,9 +187,17 @@ def generateLayout(parent):
             generateLayout(element)
 
 def printLabel(customItems):
-    global ZPLLayout,rootElement
+    global ZPLLayout,rootElement,currentDown
+    rootElement = ZPLElement()
+    rootElement.width = labelWidth
+    rootElement.height = labelHeight
+    rootElement.type = "Root"
+    rootElement.XMLElement = root
+
+    ZPLLayout = "^XA^CF0,"+str(fontHeight)
+    currentDown = margin
     ser = serial.Serial(0)
-    
+
     processElements(rootElement,customItems)
     generateLayout(rootElement)
     ZPLLayout += "^XZ"
