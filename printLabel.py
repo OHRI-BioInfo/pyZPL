@@ -35,25 +35,36 @@ def findItem(itemList,ID):
             return item
 
 def calculateTextDimensions(text,maxWidth):
+    #Inter-character gap is 3 dots for font F
     textWidth = len(str(text))*fontWidth+3*len(str(text))
     lines = int(math.ceil(float(textWidth)/maxWidth))
-    if textWidth > maxWidth:
-        textWidth = maxWidth
-    return (textWidth,lines)
+    if textWidth > maxWidth:    #If the text is larger than max width, then it will be wrapped,
+                                #so consider its width equal to max width
+        return (maxWidth,lines)
+    else:
+        return (textWidth,lines)
 
 def truncateText(text,maxWidth,maxHeight):
     dimensions = calculateTextDimensions(text,maxWidth)
+    #maxHeight/(height of each text row, including gap)
     maxLines = int(math.ceil(maxHeight/(float(fontHeight)+dimensions[1]*3)))
-    if dimensions[1] > maxLines:
+    if dimensions[1] > maxLines: #If the text takes up more lines than it is allotted, truncate
+        #(maxWidth*maxLines) = total allotted space, divided by
+        #text size+gaps
         lineChars = int(math.floor(maxWidth*maxLines/(len(str(text))*float(fontWidth)+3*len(str(text)))))
+        #Truncate to (chars in each line*allowed number of lines)
         return text[:int(lineChars*maxLines)]
     else:
         return text
 
+#Go through elements recursively and make a tree structure by adding to the root node, and then
+#to the child nodes
 def processElements(root,customItems):
     global rowHeight,currentRow,currentRowElement,elementSpacing,remainingWidth,ZPLLayout
 
     for element in list(root.XMLElement):
+        #The way this stuff works is, if the element has these defined (not None),
+        #then they will be used. Otherwise, default values (mostly defined in the ZPLElement class) will be used
         height = element.get("height")
         width = element.get("width")
 
@@ -64,6 +75,10 @@ def processElements(root,customItems):
 
         elementID = element.get("id")
         newElement = ZPLElement()
+        #Item is for custom items; ones that have user-definable variables.
+        #Any element with an "id" attribute in the XML template is considered a custom item
+        #Such elements will use the user-defined variables (passed in through a ZPLCustomItem object,
+        #for example generated in web.py) instead of the data from the XML
         item = None
         if elementID is not None:
             item = findItem(customItems,elementID)
@@ -134,6 +149,8 @@ def processElements(root,customItems):
 
         root.children.append(newElement)
 
+#Generates the ZPL layout from all the objects
+#It's recursive, because each container is considered separately
 def generateLayout(parent):
     global ZPLLayout
     widthUsed = 0
