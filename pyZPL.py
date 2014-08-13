@@ -9,6 +9,11 @@ class ZPLElement:
     ZPL = ""
     row = 0
     
+    top = None
+    bottom = None
+    left = None
+    right = None
+
 class ZPLCustomItem:
     fixed = ""
     data = ""
