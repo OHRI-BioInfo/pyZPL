@@ -1,6 +1,6 @@
 <Label>
 	<Box height="300" width="600">
-		<Text id="sample text">This is text. The text is nice.</Text>
+		<Text id="sample text" fscale="2">This is text. The text is nice.</Text>
 		<Text bottom="20" right="0">Field!</Text>
 		<Box height="100" width="300"/>
 	</Box>

@@ -25,9 +25,11 @@ currentDown = margin
 tree = ET.parse("/home/jbrooks/pyZPL/testlabel.xml")
 root = tree.getroot()
 
-fontHeight = 26
+defaultFontHeight = 18
+defaultFontWidth = 10
+fontHeight = defaultFontHeight
 #fontWidth = int(math.ceil((4.0/5.0)*fontHeight))
-fontWidth = 13
+fontWidth = defaultFontWidth
 
 def findItem(itemList,ID):
     for item in itemList:
@@ -35,8 +37,8 @@ def findItem(itemList,ID):
             return item
 
 def calculateTextDimensions(text,maxWidth):
-    #Inter-character gap is 3 dots for font F
-    textWidth = len(str(text))*fontWidth+3*len(str(text))
+    #Inter-character gap is 2 dots for font D
+    textWidth = len(str(text))*fontWidth+2*len(str(text))
     lines = int(math.ceil(float(textWidth)/maxWidth))
     if textWidth > maxWidth:    #If the text is larger than max width, then it will be wrapped,
                                 #so consider its width equal to max width
@@ -47,11 +49,11 @@ def calculateTextDimensions(text,maxWidth):
 def truncateText(text,maxWidth,maxHeight):
     dimensions = calculateTextDimensions(text,maxWidth)
     #maxHeight/(height of each text row, including gap)
-    maxLines = int(math.ceil(maxHeight/(float(fontHeight)+dimensions[1]*3)))
+    maxLines = int(math.ceil(maxHeight/(float(fontHeight)+dimensions[1]*2)))
     if dimensions[1] > maxLines: #If the text takes up more lines than it is allotted, truncate
         #(maxWidth*maxLines) = total allotted space, divided by
         #text size+gaps
-        lineChars = int(math.floor(maxWidth*maxLines/(len(str(text))*float(fontWidth)+3*len(str(text)))))
+        lineChars = int(math.floor(maxWidth*maxLines/(len(str(text))*float(fontWidth)+2*len(str(text)))))
         #Truncate to (chars in each line*allowed number of lines)
         return text[:int(lineChars*maxLines)]
     else:
@@ -115,7 +117,12 @@ def processElements(root,customItems):
                 text = item.data
             else:
                 text = element.text
-            newElement.ZPL = "^FBwidth,lines^FDtext^FS"
+            if element.get("fscale") is not None:
+                newElement.fscale = int(element.get("fscale"))
+            else:
+                newElement.fscale = 1
+            newElement.ZPL = "^CFD"+str(defaultFontWidth*newElement.fscale)+","+\
+            str(defaultFontHeight*newElement.fscale)+"^FBwidth,lines^FDtext^FS"
             newElement.text = text
 
         if element.tag == "Image":
@@ -152,7 +159,7 @@ def processElements(root,customItems):
 #Generates the ZPL layout from all the objects
 #It's recursive, because each container is considered separately
 def generateLayout(parent):
-    global ZPLLayout
+    global ZPLLayout,fontWidth,fontHeight
     widthUsed = 0
     heightUsed = 0
     rowHeight = 0
@@ -175,6 +182,8 @@ def generateLayout(parent):
             element.image = getImg(element.imageFile,element.width,element.height)
             element.ZPL = element.image.downloadCmd
         if element.type == "Text":
+            fontWidth = defaultFontWidth*element.fscale
+            fontHeight = defaultFontHeight*element.fscale
             element.text = truncateText(element.text,parent.width-parent.border*2,parent.height-parent.border*2)
             dimensions = calculateTextDimensions(element.text,parent.width-parent.border*2)
             element.width = dimensions[0]+1
@@ -240,7 +249,7 @@ def printLabel(customItems):
     rootElement.type = "Root"
     rootElement.XMLElement = root
 
-    ZPLLayout = "^XA^CFF,"+str(fontHeight)
+    ZPLLayout = "^XA"
     currentDown = margin
     ser = serial.Serial(0)
 
