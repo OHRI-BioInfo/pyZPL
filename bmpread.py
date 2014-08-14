@@ -9,28 +9,32 @@ def reverseByteArray(ba):
         newba[len(ba)-i-1] = b
     return newba
 
-def convertImg(image,imageName,width,height):
+def convertImg(image,imageName,width,height,ispwidth,ispheight):
     os.system("convert "+image+" -compress None -monochrome -colors 2 -depth 1 +dither "+imageName+".bmp")
     resizeStr = "convert "+imageName+".bmp"
     resize = False
-    
+
     if width is not 0:
         resizeStr += " -width "+str(width)
+        if ispwidth:
+            resizeStr += '%'
         resize = True
     if height is not 0:
         reizeStr += " -height "+str(height)
+        if ispheight:
+            resizeStr += '%'
         resize = True
 
     if resize:
         resizeStr += " "+imageName+".bmp"
         os.system(resizeStr)
 
-def getImg(image,width,height):
+def getImg(image,width,height,ispwidth,ispheight):
     img = ZPLImage()
     imageSplit = image.split('.')
     imageName = ""
     imageName = imageName.join(imageSplit[0:len(imageSplit)-1])
-    convertImg(image,imageName,width,height)
+    convertImg(image,imageName,width,height,ispwidth,ispheight)
     f = open(imageName+".bmp","rb")
     f.seek(10)
     arrayoffset = reverseByteArray(bytearray(f.read(4)))

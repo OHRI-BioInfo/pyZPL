@@ -3,6 +3,8 @@ class ZPLElement:
         self.children = []
     width = 0
     height = 0
+    pwidth = 0 #percentage width
+    pheight = 0 #percentage height
     x = 0
     y = 0
     type = ""

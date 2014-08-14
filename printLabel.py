@@ -69,6 +69,26 @@ def processElements(root,customItems):
         #then they will be used. Otherwise, default values (mostly defined in the ZPLElement class) will be used
         height = element.get("height")
         width = element.get("width")
+        pheight = 0
+        pwidth = 0
+
+        if height is not None:
+            if height[len(height)-1:] == "%":
+                pheight = int(height[:len(height)-1])
+                height = 0
+            else:
+                height = int(height)
+        else:
+            height = 0
+
+        if width is not None:
+            if width[len(width)-1:] == "%":
+                pwidth = int(width[:len(width)-1])
+                width = 0
+            else:
+                width = int(width)
+        else:
+            width = 0
 
         top = element.get("top")
         bottom = element.get("bottom")
@@ -89,6 +109,10 @@ def processElements(root,customItems):
             newElement.ID = elementID
         newElement.type = element.tag
         newElement.XMLElement = element
+        newElement.height = height
+        newElement.width = width
+        newElement.pheight = pheight
+        newElement.pwidth = pwidth
 
         if element.tag == "Box":
             border = element.get("border")
@@ -100,18 +124,10 @@ def processElements(root,customItems):
 
             newElement.border = border
 
-            if height is not None:
-                newElement.height = int(height)
-            if width is not None:
-                newElement.width = int(width)
             newElement.ZPL = "^GBwidth,height,"+str(border)+"^FS"
             processElements(newElement,customItems)
 
         if element.tag == "Text":
-            if height is not None:
-                newElement.height = int(height)
-            if width is not None:
-                newElement.width = int(width)
             text = ""
             if elementID is not None:
                 text = item.data
@@ -133,15 +149,26 @@ def processElements(root,customItems):
                 imageFile = element.text
             element.imageFile = imageFile
 
-            if height is not None:
-                newElement.height = int(height)
-            if width is not None:
-                newElement.width = int(width)
-            newElement.image = getImg(imageFile,newElement.width,newElement.height)
+            ispwidth = False
+            ispheight = False
+            mywidth = newElement.width
+            myheight = newElement.height
+            if pwidth != 0:
+                mywidth = pwidth
+                ispwidth = True
+            if pheight != 0:
+                myheigh = pheight
+                ispheight = True
 
-            if height is None:
+            #If width and height were none, then newElement's width and height are zero,
+            #and the image will not be resized
+            newElement.image = getImg(imageFile,mywidth,myheight,ispwidth,ispheight)
+
+            #We still need a non-zero width and height for this element, so if it wasn't specified
+            #then get it from the image we just read
+            if height == 0 and pheight == 0:
                 newElement.height = newElement.image.height
-            if width is None:
+            if width == 0 and pwidth == 0:
                 newElement.width = newElement.image.width
             ZPLLayout = newElement.image.downloadCmd + ZPLLayout
 
@@ -172,12 +199,16 @@ def generateLayout(parent):
         absolute = False
         tooBig = False
 
-        if element.width > parent.width or element.width == 0:
+        if (element.width > parent.width or element.width == 0) and element.pwidth == 0:
             element.width = parent.width-parent.border*2
             tooBig = True
-        if element.height > parent.height or element.height == 0:
+        if (element.height > parent.height or element.height == 0) and element.pheight == 0:
             element.height = parent.height-parent.border*2
             tooBig = True
+        if element.pwidth != 0:
+            element.width = int(round(element.pwidth/100.0*parent.width))
+        if element.pheight != 0:
+            element.height = int(round(element.pheight/100.0*parent.height))
         if tooBig and element.type == "Image":
             element.image = getImg(element.imageFile,element.width,element.height)
             element.ZPL = element.image.downloadCmd
