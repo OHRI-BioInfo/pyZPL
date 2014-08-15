@@ -1,0 +1,23 @@
+<Label>
+	<Box height="150" width="90%">
+		<Text left="10" bottom="5">Product Identifier/Identificateur Du Produit</Text>
+		<Text id="product_id" fscale="2" />
+	</Box>
+	<Box height="300" width="90%">
+		<Text left="10" bottom="5">WHMIS Hazard Symbols/Symboles De Danger SIMDUT</Text>
+		<Image id="compressed_gas" fixed="true">WHMIS/SymbolA_sm.gif</Image>
+		<Image id="flammable" fixed="true">WHMIS/SymbolB_sm.gif</Image>
+		<Image id="oxidizing" fixed="true">WHMIS/SymbolC_sm.gif</Image>
+		<Image id="posionous_D1" fixed="true">WHMIS/SymbolD1_sm.gif</Image>
+		<Image id="poisonous_D2" fixed="true">WHMIS/SymbolD2_sm.gif</Image>
+		<Image id="poisonous_D3" fixed="true">WHMIS/SymbolD3_sm.gif</Image>
+		<Image id="corrosive" fixed="true">WHMIS/SymbolE_sm.gif</Image>
+		<Image id="reactive" fixed="true">WHMIS/SymbolF_sm.gif</Image>
+	</Box>
+	<Box height="300" width="90%">
+		<Text left="10" bottom="5">Personal Protective Equipment/Equipment De Protection Personnel</Text>
+	</Box>
+	<Box height="150" width="90%">
+		<Text left="10" bottom="5">Other/Autre</Text>
+	</Box>
+</Label>

@@ -3,6 +3,8 @@ import math
 import os
 from pyZPL import *
 
+imagedir = "images/"
+
 def reverseByteArray(ba):
     newba = bytearray(len(ba))
     for i,b in enumerate(ba):
@@ -10,7 +12,7 @@ def reverseByteArray(ba):
     return newba
 
 def convertImg(image,imageName,width,height,ispwidth,ispheight):
-    os.system("convert "+image+" -compress None -monochrome -colors 2 -depth 1 +dither "+imageName+".bmp")
+    os.system("convert "+imagedir+image+" -compress None -monochrome -colors 2 -depth 1 +dither "+imageName+".bmp")
     resizeStr = "convert "+imageName+".bmp"
     resize = False
 
@@ -31,9 +33,12 @@ def convertImg(image,imageName,width,height,ispwidth,ispheight):
 
 def getImg(image,width,height,ispwidth,ispheight):
     img = ZPLImage()
-    imageSplit = image.split('.')
-    imageName = ""
-    imageName = imageName.join(imageSplit[0:len(imageSplit)-1])
+    fileSplit = image.split('/')
+    fileName = fileSplit[len(fileSplit)-1]
+    imageSplit = fileName.split('.')
+    imageName = str.join('.',imageSplit[:len(imageSplit)-1])
+    print image
+    print imageName
     convertImg(image,imageName,width,height,ispwidth,ispheight)
     f = open(imageName+".bmp","rb")
     f.seek(10)

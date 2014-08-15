@@ -6,7 +6,7 @@ import xml.etree.ElementTree as ET
 app = Flask(__name__)
 
 
-tree = ET.parse("/home/jbrooks/pyZPL/testlabel.xml")
+tree = ET.parse("/home/jbrooks/pyZPL/pace.xml")
 customElements = tree.findall(".//*[@id]")
 
 customItems = []

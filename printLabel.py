@@ -22,7 +22,7 @@ dotshigh = labelHeight
 
 currentDown = margin
 
-tree = ET.parse("/home/jbrooks/pyZPL/testlabel.xml")
+tree = ET.parse("/home/jbrooks/pyZPL/pace.xml")
 root = tree.getroot()
 
 defaultFontHeight = 18
