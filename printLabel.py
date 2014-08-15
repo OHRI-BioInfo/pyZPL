@@ -196,7 +196,8 @@ def generateLayout(parent):
     firstElement = True
 
     for element in list(parent.children):
-        absolute = False
+        absoluteX = False
+        absoluteY = False
         tooBig = False
 
         if (element.width > parent.width or element.width == 0) and element.pwidth == 0:
@@ -222,19 +223,19 @@ def generateLayout(parent):
 
         if element.left is not None:
             element.x = parent.x+element.left+parent.border
-            absolute = True
+            absoluteX = True
         elif element.right is not None:
             element.x = parent.x+parent.width-element.right-parent.border-element.width
-            absolute = True
+            absoluteX = True
 
         if element.top is not None:
             element.y = parent.y+element.top+parent.border
-            absolute = True
+            absoluteY = True
         elif element.bottom is not None:
             element.y = parent.y+parent.height-element.bottom-parent.border-element.height
-            absolute = True
+            absoluteY = True
 
-        if not absolute:
+        if not absoluteX:
             widthUsed += element.width
             if widthUsed > parent.width:
                 heightUsed += rowHeight
@@ -243,12 +244,13 @@ def generateLayout(parent):
                 widthUsed = element.width
                 rownum += 1
                 firstElement = True
-            if rowHeight < element.height:
+            if rowHeight < element.height and not absoluteY:
                 rowHeight = element.height
             if not firstElement:
                 widthUsed += elementSpacing
             firstElement = False
-            element.y = heightUsed+rownum*elementSpacing+parent.y+parent.border
+            if not absoluteY:
+                element.y = heightUsed+rownum*elementSpacing+parent.y+parent.border
             element.x = widthUsed-element.width+parent.x
 
         if (element.x > parent.x+parent.width and not absoluteX) or (element.y > parent.y+parent.height and not absoluteY):
@@ -258,7 +260,7 @@ def generateLayout(parent):
     rowWidths.append(widthUsed)
 
     for element in list(parent.children):
-        if element.right is None and element.left is None:    element.x += (parent.width-rowWidths[element.row])/2
+        if element.right is None and element.left is None: element.x += (parent.width-rowWidths[element.row])/2
         element.ZPL = element.ZPL.replace("width",str(element.width))
         if element.type == "Text":
             element.ZPL = element.ZPL.replace("lines",str(element.height/fontHeight))
