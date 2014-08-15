@@ -3,7 +3,7 @@
 DPI = 203 #dots/inch
 width = 4 #inches
 height = 6 #inches
-elementSpacing = 50 #dots
+elementSpacing = 20 #dots
 margin = 40 #dots
 
 import xml.etree.ElementTree as ET
@@ -38,7 +38,7 @@ def findItem(itemList,ID):
 
 def calculateTextDimensions(text,maxWidth):
     #Inter-character gap is 2 dots for font D
-    textWidth = len(str(text))*fontWidth+2*len(str(text))
+    textWidth = (len(str(text))+1)*fontWidth+2*len(str(text))
     lines = int(math.ceil(float(textWidth)/maxWidth))
     if textWidth > maxWidth:    #If the text is larger than max width, then it will be wrapped,
                                 #so consider its width equal to max width
@@ -137,8 +137,8 @@ def processElements(root,customItems):
                 newElement.fscale = int(element.get("fscale"))
             else:
                 newElement.fscale = 1
-            newElement.ZPL = "^CFD"+str(defaultFontWidth*newElement.fscale)+","+\
-            str(defaultFontHeight*newElement.fscale)+"^FBwidth,lines^FDtext^FS"
+            newElement.ZPL = "^CFD"+","+str(defaultFontHeight*newElement.fscale)+","+\
+            str(defaultFontWidth*newElement.fscale)+"^FBwidth,lines^FDtext^FS"
             newElement.text = text
 
         if element.tag == "Image":
@@ -217,7 +217,7 @@ def generateLayout(parent):
             fontHeight = defaultFontHeight*element.fscale
             element.text = truncateText(element.text,parent.width-parent.border*2,parent.height-parent.border*2)
             dimensions = calculateTextDimensions(element.text,parent.width-parent.border*2)
-            element.width = dimensions[0]+1
+            element.width = dimensions[0]
             element.height = dimensions[1]*fontHeight
 
         if element.left is not None:
@@ -236,8 +236,6 @@ def generateLayout(parent):
 
         if not absolute:
             widthUsed += element.width
-            if rowHeight < element.height:
-                rowHeight = element.height
             if widthUsed > parent.width:
                 heightUsed += rowHeight
                 rowHeight = 0
@@ -245,10 +243,12 @@ def generateLayout(parent):
                 widthUsed = element.width
                 rownum += 1
                 firstElement = True
+            if rowHeight < element.height:
+                rowHeight = element.height
             if not firstElement:
                 widthUsed += elementSpacing
             firstElement = False
-            element.y = heightUsed+margin+rownum*elementSpacing+parent.y
+            element.y = heightUsed+rownum*elementSpacing+parent.y+parent.border
             element.x = widthUsed-element.width+parent.x
 
         if (element.x > parent.x+parent.width and not absoluteX) or (element.y > parent.y+parent.height and not absoluteY):

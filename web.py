@@ -31,7 +31,8 @@ def print_():
             newItem = ZPLCustomItem()
             split = key.split('_')
             newItem.type = split[len(split)-1]
-            newItem.ID = str.join("",split[:len(split)-1])
+            newItem.ID = str.join("_",split[:len(split)-1])
+            print newItem.ID
 
             newItem.data = request.form[newItem.ID+"_string"]
             try:
