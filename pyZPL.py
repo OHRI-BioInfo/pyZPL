@@ -27,6 +27,7 @@ class ZPLImage:
     width = 0
     height = 0
     downloadCmd = ""
+    uploadName = "" #File name as uploaded; see bmpread.py for how this is generated
 
 class ZPLRow:
     def __init__(self):

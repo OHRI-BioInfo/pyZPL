@@ -268,7 +268,7 @@ def generateLayout(parent):
         else:
             element.ZPL = element.ZPL.replace("height",str(element.height))
         if element.type == "Image":
-            element.ZPL += "^XGR:SAMPLE.GRF,1,1^FS"
+            element.ZPL += "^XGR:"+element.image.uploadName+",1,1^FS"
         ZPLLayout += "^FO"+str(element.x+margin)+","+str(element.y+margin)+element.ZPL
         if len(element.children) is not 0:
             generateLayout(element)
