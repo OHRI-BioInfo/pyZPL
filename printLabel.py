@@ -38,6 +38,7 @@ ser = None
 def getStoredImages():
     global ser
     ser.write("^XA^HWR:*.*^XZ")
+    ser.flush()
     output = ""
     EOT = False
     while not EOT:
@@ -327,5 +328,6 @@ def printLabel(customItems):
     downloadImages()
     ZPLLayout += "^XZ"
     ser.write(ZPLLayout)
+    ser.flush()
     ser.close()
     return ZPLLayout
