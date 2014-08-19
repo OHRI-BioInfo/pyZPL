@@ -80,6 +80,6 @@ def getImg(image,width,height,ispwidth,ispheight):
     #Take the first 7 characters of a base32-encoded sha-1 hash of the image name, 
     #and use that as the name when uploading. This ensures that the file names are always
     #7 or fewer characters (as per ZPL requirements) but have a very low chance of colliding
-    img.uploadName = base64.b32encode(hashlib.sha1(imageName).digest())[:7]
-    img.downloadCmd = "~DGR:"+img.uploadName+".GRF,"+str(len(imagedatastr)/2)+","+str(img.width*img.height/8/img.height)+","+imagedatastr
+    img.downloadName = base64.b32encode(hashlib.sha1(imageName).digest())[:7]
+    img.downloadCmd = "~DGR:"+img.downloadName+".GRF,"+str(len(imagedatastr)/2)+","+str(img.width*img.height/8/img.height)+","+imagedatastr
     return img

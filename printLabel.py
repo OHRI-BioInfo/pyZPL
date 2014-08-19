@@ -11,6 +11,7 @@ import sys
 import re
 import serial
 import math
+import io
 from bmpread import *
 from pyZPL import *
 
@@ -30,6 +31,40 @@ defaultFontWidth = 10
 fontHeight = defaultFontHeight
 #fontWidth = int(math.ceil((4.0/5.0)*fontHeight))
 fontWidth = defaultFontWidth
+
+images = []
+ser = None
+
+def getStoredImages():
+    global ser
+    ser.write("^XA^HWR:*.*^XZ")
+    output = ""
+    EOT = False
+    while not EOT:
+        readchar = ser.read(1)
+        if ord(readchar) == 3:
+            EOT = True
+        output += readchar
+    lines = output.split('\n')
+    stored = []
+    for line in lines:
+        regex = re.compile(r'.*?\* R\:([A-Z0-9]+)')
+        match = regex.match(line)
+        print line
+        if match is None:
+            continue
+        stored.append(match.group(1))
+    return stored
+
+def downloadImages():
+    global images,ser
+    storedImages = getStoredImages()
+    for image in images:
+        if image.downloadName in storedImages:
+            print image.downloadName+" already downloaded, skipping"
+            continue
+        print "Downloading "+image.downloadName+" to printer"
+        ser.write(image.downloadCmd)
 
 def findItem(itemList,ID):
     for item in itemList:
@@ -170,7 +205,7 @@ def processElements(root,customItems):
                 newElement.height = newElement.image.height
             if width == 0 and pwidth == 0:
                 newElement.width = newElement.image.width
-            ZPLLayout = newElement.image.downloadCmd + ZPLLayout
+            images.append(newElement.image)
 
         if top is not None:
             newElement.top = int(top)
@@ -268,13 +303,14 @@ def generateLayout(parent):
         else:
             element.ZPL = element.ZPL.replace("height",str(element.height))
         if element.type == "Image":
-            element.ZPL += "^XGR:"+element.image.uploadName+",1,1^FS"
+            element.ZPL += "^XGR:"+element.image.downloadName+",1,1^FS"
         ZPLLayout += "^FO"+str(element.x+margin)+","+str(element.y+margin)+element.ZPL
         if len(element.children) is not 0:
             generateLayout(element)
 
 def printLabel(customItems):
-    global ZPLLayout,rootElement,currentDown
+    global ZPLLayout,rootElement,currentDown,ser,images
+    images = []
     rootElement = ZPLElement()
     rootElement.width = labelWidth
     rootElement.height = labelHeight
@@ -284,12 +320,12 @@ def printLabel(customItems):
 
     ZPLLayout = "^XA"
     currentDown = margin
-    ser = serial.Serial(0)
+    ser = serial.Serial(0,9600,timeout=5)
 
     processElements(rootElement,customItems)
     generateLayout(rootElement)
+    downloadImages()
     ZPLLayout += "^XZ"
-    delImages = "^XA^IDR:*.*^FS^XZ"
-    ser.write(delImages+ZPLLayout)
+    ser.write(ZPLLayout)
     ser.close()
     return ZPLLayout
