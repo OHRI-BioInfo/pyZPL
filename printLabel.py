@@ -12,6 +12,8 @@ import re
 import serial
 import math
 import io
+import shutil
+import tempfile
 from bmpread import *
 from pyZPL import *
 
@@ -34,6 +36,7 @@ fontWidth = defaultFontWidth
 
 images = []
 ser = None
+tempdir = ""
 
 def getStoredImages():
     global ser
@@ -60,11 +63,11 @@ def getStoredImages():
 def downloadImages():
     global images,ser
     storedImages = getStoredImages()
-    for image in images:
+    for i,image in enumerate(images):
         if image.downloadName in storedImages:
-            print image.downloadName+" already downloaded, skipping"
+            print image.downloadName+" already downloaded, skipping ("+str(i+1)+"/"+str(len(images))+")"
             continue
-        print "Downloading "+image.downloadName+" to printer"
+        print "Downloading "+image.downloadName+" to printer ("+str(i+1)+"/"+str(len(images))+")"
         ser.write(image.downloadCmd)
 
 def findItem(itemList,ID):
@@ -198,7 +201,7 @@ def processElements(root,customItems):
 
             #If width and height were none, then newElement's width and height are zero,
             #and the image will not be resized
-            newElement.image = getImg(imageFile,mywidth,myheight,ispwidth,ispheight)
+            newElement.image = getImg(imageFile,mywidth,myheight,ispwidth,ispheight,tempdir)
 
             #We still need a non-zero width and height for this element, so if it wasn't specified
             #then get it from the image we just read
@@ -247,7 +250,7 @@ def generateLayout(parent):
         if element.pheight != 0:
             element.height = int(round(element.pheight/100.0*parent.height))
         if tooBig and element.type == "Image":
-            element.image = getImg(element.imageFile,element.width,element.height)
+            element.image = getImg(element.imageFile,element.width,element.height,tempdir)
             element.ZPL = element.image.downloadCmd
         if element.type == "Text":
             fontWidth = defaultFontWidth*element.fscale
@@ -310,7 +313,8 @@ def generateLayout(parent):
             generateLayout(element)
 
 def printLabel(customItems):
-    global ZPLLayout,rootElement,currentDown,ser,images
+    global ZPLLayout,rootElement,currentDown,ser,images,tempdir
+    tempdir = tempfile.mkdtemp()+"/"
     images = []
     rootElement = ZPLElement()
     rootElement.width = labelWidth
@@ -330,4 +334,5 @@ def printLabel(customItems):
     ser.write(ZPLLayout)
     ser.flush()
     ser.close()
+    shutil.rmtree(tempdir)
     return ZPLLayout

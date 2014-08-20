@@ -16,18 +16,19 @@
 	</Box>
 	<Box height="300" width="90%">
 		<Text left="10" bottom="5">Personal Protective Equipment/Equipment De \&amp; Protection Personnel</Text>
-		<Image id="ppe_goggles" fixed="true">PPE/ppe_goggles.png</Image>
-		<Image id="ppe_face" fixed="true">PPE/ppe_face.png</Image>
-		<Image id="ppe_apron" fixed="true">PPE/ppe_apron.png</Image>
-		<Image id="ppe_dust_mask" fixed="true">PPE/ppe_dust_mask.png</Image>
-		<Image id="ppe_apr" fixed="true">PPE/ppe_apr.png</Image>
-		<Image id="ppe_sar" fixed="true">PPE/ppe_sar.png</Image>
-		<Image id="ppe_hand" fixed="true">PPE/ppe_hand.png</Image>
-		<Image id="ppe_foot" fixed="true">PPE/ppe_foot.png</Image>
-		<Image id="ppe_full_body" fixed="true">PPE/ppe_full_body.png</Image>
+		<Image id="ppe_goggles" fixed="true" width="100">PPE/ppe_goggles.png</Image>
+		<Image id="ppe_face" fixed="true" width="100">PPE/ppe_face.png</Image>
+		<Image id="ppe_apron" fixed="true" width="100">PPE/ppe_apron.png</Image>
+		<Image id="ppe_dust_mask" fixed="true" width="100">PPE/ppe_dust_mask.png</Image>
+		<Image id="ppe_apr" fixed="true" width="100">PPE/ppe_apr.png</Image>
+		<Image id="ppe_sar" fixed="true" width="100">PPE/ppe_sar.png</Image>
+		<Image id="ppe_hand" fixed="true" width="100">PPE/ppe_hand.png</Image>
+		<Image id="ppe_foot" fixed="true" width="100">PPE/ppe_foot.png</Image>
+		<Image id="ppe_full_body" fixed="true" width="138">PPE/ppe_full_body.png</Image>
 	</Box>
 
 	<Box height="150" width="90%">
+
 		<Text left="10" bottom="5">Other/Autre</Text>
 	</Box>
 </Label>
