@@ -15,6 +15,7 @@
 		<Image id="reactive" fixed="true">WHMIS/SymbolF_sm.gif</Image>
 	</Box>
 	<Box height="300" width="90%">
+		<vspacer size="10" />
 		<Text left="10" bottom="5">Personal Protective Equipment/Equipment De \&amp; Protection Personnel</Text>
 		<Image id="ppe_goggles" fixed="true" width="100">PPE/ppe_goggles.png</Image>
 		<Image id="ppe_face" fixed="true" width="100">PPE/ppe_face.png</Image>

@@ -211,7 +211,7 @@ def processElements(root,customItems):
                 mywidth = pwidth
                 ispwidth = True
             if pheight != 0:
-                myheigh = pheight
+                myheight = pheight
                 ispheight = True
 
             #If width and height were none, then newElement's width and height are zero,
@@ -225,6 +225,12 @@ def processElements(root,customItems):
             if width == 0 and pwidth == 0:
                 newElement.width = newElement.image.width
             images.append(newElement.image)
+
+        if element.tag == "vspacer" or element.tag == "hspacer":
+            if element.get("size") is not None:
+                newElement.size = int(element.get("size"))
+            else:
+                newElement.size = 0
 
         if top is not None:
             newElement.top = int(top)
@@ -250,6 +256,14 @@ def generateLayout(parent):
     firstElement = True
 
     for element in list(parent.children):
+        #Handle spacers
+        if element.type == "vspacer":
+            heightUsed += element.size
+            continue
+        if element.type == "hspacer":
+            widthUsed += element.size
+            continue
+
         absoluteX = False
         absoluteY = False
         tooBig = False
