@@ -78,9 +78,9 @@ def findItem(itemList,ID):
         if item.ID == ID:
             return item
 
-def calculateTextDimensions(text,maxWidth):
+def calculateTextDimensions(text,maxWidth,fscale):
     #Inter-character gap is 2 dots for font D
-    textWidth = (len(str(text))+1)*fontWidth+2*len(str(text))
+    textWidth = (len(str(text))+1)*fontWidth+fscale*2*len(str(text))
     lines = int(math.ceil(float(textWidth)/maxWidth))
     if textWidth > maxWidth:    #If the text is larger than max width, then it will be wrapped,
                                 #so consider its width equal to max width
@@ -88,8 +88,8 @@ def calculateTextDimensions(text,maxWidth):
     else:
         return (textWidth,lines)
 
-def truncateText(text,maxWidth,maxHeight):
-    dimensions = calculateTextDimensions(text,maxWidth)
+def truncateText(text,maxWidth,maxHeight,fscale):
+    dimensions = calculateTextDimensions(text,maxWidth,fscale)
     #maxHeight/(height of each text row, including gap)
     maxLines = int(math.ceil(maxHeight/(float(fontHeight)+dimensions[1]*2)))
     if dimensions[1] > maxLines: #If the text takes up more lines than it is allotted, truncate
@@ -270,8 +270,8 @@ def generateLayout(parent):
         if element.type == "Text":
             fontWidth = defaultFontWidth*element.fscale
             fontHeight = defaultFontHeight*element.fscale
-            element.text = truncateText(element.text,parent.width-parent.border*2,parent.height-parent.border*2)
-            dimensions = calculateTextDimensions(element.text,parent.width-parent.border*2)
+            element.text = truncateText(element.text,parent.width-parent.border*2,parent.height-parent.border*2,element.fscale)
+            dimensions = calculateTextDimensions(element.text,parent.width-parent.border*2,element.fscale)
             element.width = dimensions[0]
             element.height = dimensions[1]*fontHeight
 
