@@ -79,14 +79,21 @@ def findItem(itemList,ID):
             return item
 
 def calculateTextDimensions(text,maxWidth,fscale):
+    lines = 0
+    widest = 0
     #Inter-character gap is 2 dots for font D
-    textWidth = (len(str(text))+1)*fontWidth+fscale*2*len(str(text))
-    lines = int(math.ceil(float(textWidth)/maxWidth))
+    splitForcedLines = text.split(r"\&")
+    for line in splitForcedLines:
+        textWidth = (len(line)+1.0)*fontWidth+fscale*2.0*len(line)
+        if widest < textWidth:
+            widest = textWidth
+        lines += int(math.ceil(textWidth/maxWidth))
+    print text+str(lines)+","+str(textWidth)+","+str(maxWidth)
     if textWidth > maxWidth:    #If the text is larger than max width, then it will be wrapped,
                                 #so consider its width equal to max width
         return (maxWidth,lines)
     else:
-        return (textWidth,lines)
+        return (int(widest),lines)
 
 def truncateText(text,maxWidth,maxHeight,fscale):
     dimensions = calculateTextDimensions(text,maxWidth,fscale)
@@ -288,6 +295,8 @@ def generateLayout(parent):
             dimensions = calculateTextDimensions(element.text,parent.width-parent.border*2,element.fscale)
             element.width = dimensions[0]
             element.height = dimensions[1]*fontHeight
+            print "height:"+str(element.height)
+            element.lines = dimensions[1]
 
         if element.left is not None:
             element.x = parent.x+element.left+parent.border
@@ -331,13 +340,13 @@ def generateLayout(parent):
         if element.right is None and element.left is None: element.x += (parent.width-rowWidths[element.row])/2
         element.ZPL = element.ZPL.replace("width",str(element.width))
         if element.type == "Text":
-            element.ZPL = element.ZPL.replace("lines",str(element.height/fontHeight))
+            element.ZPL = element.ZPL.replace("lines",str(element.lines))
             element.ZPL = element.ZPL.replace("text",element.text)
         else:
             element.ZPL = element.ZPL.replace("height",str(element.height))
         if element.type == "Image":
             element.ZPL += "^XGR:"+element.image.downloadName+",1,1^FS"
-        ZPLLayout += "^FO"+str(element.x+margin)+","+str(element.y+margin)+element.ZPL
+        ZPLLayout += "^FO"+str(element.x)+","+str(element.y)+element.ZPL
         if len(element.children) is not 0:
             generateLayout(element)
 
@@ -351,6 +360,8 @@ def printLabel(customItems):
     rootElement.border = 0
     rootElement.type = "Root"
     rootElement.XMLElement = root
+    rootElement.x = margin
+    rootElement.y = margin
 
     ZPLLayout = "^XA"
     currentDown = margin

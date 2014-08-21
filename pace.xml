@@ -16,7 +16,7 @@
 	</Box>
 	<Box height="300" width="90%">
 		<vspacer size="10" />
-		<Text left="10" bottom="5">Personal Protective Equipment/Equipment De \&amp; Protection Personnel</Text>
+		<Text left="10" bottom="5">Personal Protective Equipment/Equipment De\&amp;Protection Personnel</Text>
 		<Image id="ppe_goggles" fixed="true" width="100">PPE/ppe_goggles.png</Image>
 		<Image id="ppe_face" fixed="true" width="100">PPE/ppe_face.png</Image>
 		<Image id="ppe_apron" fixed="true" width="100">PPE/ppe_apron.png</Image>
@@ -29,7 +29,8 @@
 	</Box>
 
 	<Box height="150" width="90%">
-
 		<Text left="10" bottom="5">Other/Autre</Text>
+		<Text id="other" top="10" left="5">- Dangerous \&amp;- Doubleplustoxic\&amp;- wow such unsafe\&amp;- handle with much care</Text>
 	</Box>
+	<Text justify="center" bottom="0">Refer to the Material Safety Data Sheet for additional information/Pour Information Supplementaire Referer A La Fiche Signalitique</Text>
 </Label>
