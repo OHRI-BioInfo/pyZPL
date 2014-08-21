@@ -24,7 +24,7 @@
 		<Image id="ppe_sar" fixed="true" width="100">PPE/ppe_sar.png</Image>
 		<Image id="ppe_hand" fixed="true" width="100">PPE/ppe_hand.png</Image>
 		<Image id="ppe_foot" fixed="true" width="100">PPE/ppe_foot.png</Image>
-		<Image id="ppe_full_body" fixed="true" width="138">PPE/ppe_full_body.png</Image>
+		<Image id="ppe_full_body" fixed="true" width="100">PPE/ppe_full_body.png</Image>
 	</Box>
 
 	<Box height="150" width="90%">

@@ -46,16 +46,19 @@ def getStoredImages():
     EOT = False
     while not EOT:
         readchar = ser.read(1)
+        #3 is ASCII end-of-transmission character
         if ord(readchar) == 3:
             EOT = True
         output += readchar
     lines = output.split('\n')
     stored = []
     for line in lines:
+        #Takes the image name out of a line like this:
+        #* R:C5SVJ64.GRF    1320
         regex = re.compile(r'.*?\* R\:([A-Z0-9]+)')
         match = regex.match(line)
         print line
-        if match is None:
+        if match is None: #Ignore lines that don't match this format
             continue
         stored.append(match.group(1))
     return stored
@@ -106,6 +109,8 @@ def processElements(root,customItems):
     for element in list(root.XMLElement):
         #The way this stuff works is, if the element has these defined (not None),
         #then they will be used. Otherwise, default values (mostly defined in the ZPLElement class) will be used
+        #Usually when stuff is set to 0, the next stage of the program (generating the layout) will detect this
+        #and act accordingly
         height = element.get("height")
         width = element.get("width")
         pheight = 0

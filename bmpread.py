@@ -7,10 +7,14 @@ from pyZPL import *
 
 imagedir = "images/"
 
+#This is used to reverse the order of bytes when reading the header.
+#This is necessary because, for example, the 4 bytes following offset 10 define where the
+#pixel array begins. If it begins at 0x82, the 4 bytes read, in order: 82 00 00 00
+#This is backwards; 0x82 is very different from 0x82000000 and so it must be reversed
 def reverseByteArray(ba):
     newba = bytearray(len(ba))
     for i,b in enumerate(ba):
-        newba[len(ba)-i-1] = b
+        newba[len(ba)-i-1] = b #Put bytes from beginning of ba at the end of newba
     return newba
 
 def convertImg(image,imageName,width,height,ispwidth,ispheight,tempdir):
@@ -42,18 +46,29 @@ def convertImg(image,imageName,width,height,ispwidth,ispheight,tempdir):
     os.system(command)
     print command
 
+#Read image data, skips over padding and ensures that padding within bytes will end
+#up being white (after inversion). Expects that inFile's pointer is at the beginning
+#of the pixel array
 def readImageData(rowsize,padding,width,inFile):
     EOF = False
     unpaddedImage = bytearray()
     i = 1
+
+    #Undefined bits in the byte at the end of a row (not counting 4-byte padding)
+    #A 100-pixel row's pixels take up 100 bits, or 12.5 bytes. This means that there
+    #are 8*0.5 (4) unused bits at the end, which must be set to FF so that they will be
+    #white after inversion later
     unusedBits = int((math.ceil(width/8.0)-(width/8.0))*8)
+
+    #Binary mask to OR with the last byte; if there are 5 unused bits then the mask will
+    #be 00011111
     unusedBitsMask = int(pow(2,unusedBits)-1)
     print bin(unusedBitsMask)
     while not EOF:
         try:
             readByte = int(binascii.hexlify(inFile.read(1)),16)
             if i == rowsize-padding:
-                inFile.seek(padding,1)
+                inFile.seek(padding,1) #Skip the padding at the end of the row
                 i = 1
                 unpaddedImage.append(readByte | unusedBitsMask)
             else:
@@ -73,8 +88,9 @@ def getImg(image,width,height,ispwidth,ispheight,tempdir):
     print imageName
     convertImg(image,imageName,width,height,ispwidth,ispheight,tempdir)
     f = open(tempdir+imageName+".bmp","rb")
+
     f.seek(10)
-    arrayoffset = reverseByteArray(bytearray(f.read(4)))
+    arrayoffset = reverseByteArray(bytearray(f.read(4))) #offset where the pixel data array is located
 
     f.seek(18)
     widthbytes = reverseByteArray(bytearray(f.read(4)))
@@ -85,7 +101,7 @@ def getImg(image,width,height,ispwidth,ispheight,tempdir):
 
     f.seek(34)
     sizebytes = reverseByteArray(bytearray(f.read(4)))
-    size = int(binascii.hexlify(sizebytes),16)
+    size = int(binascii.hexlify(sizebytes),16) #Size of the pixel data array, including padding
     print "size: "+str(size)
 
     f.seek(int(binascii.hexlify(arrayoffset),16))
@@ -97,15 +113,22 @@ def getImg(image,width,height,ispwidth,ispheight,tempdir):
     print "padding: "+str(padding)
     for i in range(0,img.height):
         for j in range(0,rowsize-padding):
-            hexr = imagedata[i*(rowsize-padding)+j]^0xff
+            hexr = imagedata[i*(rowsize-padding)+j]^0xff #Invert the bits (colours) so that it prints properly
+            #hex1 is the first hex digit in the byte, hex2 is the second
             hex1 = hexr>>4
             hex2 = hexr&0x0f
+
+            #Reverse each hex digit, add them together and append them to the image
+            #reversed_hexx are what results when you take the binary representation of the hex digit
+            #and run it backwards; this is important because a hex digit is a chunk of 4 pixels, and
+            #each hex digit must be internally reversed in order to reverse the order of the pixels
             reversed_hex1 = sum(1<<(4-1-k) for k in range(4) if hex1>>k&1)
             reversed_hex2 = sum(1<<(4-1-k) for k in range(4) if hex2>>k&1)
             concat = str(hex(reversed_hex1))[2]+str(hex(reversed_hex2))[2]
             print concat,
             reversedImage.append(int(concat,16))
         print '\n',
+    #Run the image data string backwards
     imagedatastr = binascii.hexlify(reversedImage)[::-1]
     print imagedatastr
 
