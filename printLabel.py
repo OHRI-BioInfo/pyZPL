@@ -173,6 +173,7 @@ def processElements(root,customItems):
 
         if element.tag == "Text":
             text = ""
+            justify = "L"
             if elementID is not None:
                 text = item.data
             else:
@@ -181,8 +182,17 @@ def processElements(root,customItems):
                 newElement.fscale = int(element.get("fscale"))
             else:
                 newElement.fscale = 1
+            if element.get("justify") is not None:
+                justify = element.get("justify")
+                if justify == "justify":
+                    justify = "J"
+                elif justify == "right":
+                    justify = "R"
+                elif justify == "center":
+                    justify = "C"
+
             newElement.ZPL = "^CFD"+","+str(defaultFontHeight*newElement.fscale)+","+\
-            str(defaultFontWidth*newElement.fscale)+"^FBwidth,lines^FDtext^FS"
+            str(defaultFontWidth*newElement.fscale)+"^FBwidth,lines,,"+justify+"^FDtext^FS"
             newElement.text = text
 
         if element.tag == "Image":

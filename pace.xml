@@ -1,7 +1,7 @@
 <Label>
 	<Box height="150" width="90%">
 		<Text left="10" bottom="5">Product Identifier/Identificateur Du Produit</Text>
-		<Text id="product_id" fscale="2" top="10"/>
+		<Text id="product_id" fscale="2" top="10" justify="center"/>
 	</Box>
 	<Box height="350" width="90%">
 		<Text left="10" bottom="5">WHMIS Hazard Symbols/Symboles De Danger SIMDUT</Text>
