@@ -18,7 +18,8 @@ def reverseByteArray(ba):
     return newba
 
 def convertImg(image,imageName,width,height,ispwidth,ispheight,tempdir):
-    resizeCommand = "convert "+imagedir+image+" -resize "
+    dn = os.path.dirname(os.path.realpath(__file__))+"/"
+    resizeCommand = "convert "+dn+imagedir+image+" -resize "
     resize = False
 
     if width is not 0:
@@ -40,7 +41,7 @@ def convertImg(image,imageName,width,height,ispwidth,ispheight,tempdir):
         print resizeCommand
         command = "convert "+tempdir+fileName
     else:
-        command = "convert "+imagedir+image
+        command = "convert "+dn+imagedir+image
 
     command += " -flatten -compress None -monochrome -colors 2 -depth 1 +dither "+tempdir+imageName+".bmp"
     os.system(command)

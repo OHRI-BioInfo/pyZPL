@@ -2,11 +2,12 @@ from flask import *
 from pyZPL import *
 from printLabel import printLabel
 import xml.etree.ElementTree as ET
+import os
 
 app = Flask(__name__)
 
-
-tree = ET.parse("/home/jbrooks/pyZPL/pace.xml")
+dn = os.path.dirname(os.path.realpath(__file__))+"/"
+tree = ET.parse(dn+"pace.xml")
 customElements = tree.findall(".//*[@id]")
 
 customItems = []

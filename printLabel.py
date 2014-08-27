@@ -25,7 +25,8 @@ dotshigh = labelHeight
 
 currentDown = margin
 
-tree = ET.parse("/home/jbrooks/pyZPL/pace.xml")
+dn = os.path.dirname(os.path.realpath(__file__))+"/"
+tree = ET.parse(dn+"pace.xml")
 root = tree.getroot()
 
 defaultFontHeight = 18
